@@ -24,6 +24,7 @@ public class OpenOptimizeMc implements ClientModInitializer {
     private static volatile OpenOptimizeMc instance;
     private static Config config;
     private static final BehaviorManager behaviorManager = new BehaviorManager();
+    private static boolean isUpdateAvailable;
 
 
     public static OpenOptimizeMc getInstance() {
@@ -49,6 +50,18 @@ public class OpenOptimizeMc implements ClientModInitializer {
     private boolean toggleOnlyHeads = false;
     private boolean configOpen = false;
 
+    public static boolean isUpdateAvailable() {
+        return isUpdateAvailable;
+    }
+
+    public static void setIsUpdateAvailable(boolean isUpdateAvailable) {
+        OpenOptimizeMc.isUpdateAvailable = isUpdateAvailable;
+    }
+
+    public static String getUpdateURL() {
+        return "https://fazziclay.github.io/openoptimizemc?from_build="+Version.BUILD+"&from_name="+Version.NAME+"&from_dev="+Version.DEVELOPMENT;
+    }
+
     @Override
     public void onInitializeClient() {
         instance = this;
@@ -59,9 +72,10 @@ public class OpenOptimizeMc implements ClientModInitializer {
         behaviorManager.setBehaviorType(config.isAIBehavior() ? BehaviorType.AI_AUTOMATIC : BehaviorType.CONFIG_DIRECTLY);
         ClientTickEvents.START_CLIENT_TICK.register(behaviorManager::tick);
 
-        KeyBinding binding_togglePlayers = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.openoptimizemc.togglePlayers", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_I, "key.category.first.test"));
-        KeyBinding binding_toggleOnlyHeads = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.openoptimizemc.toggleOnlyHeads", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_U, "key.category.first.test"));
-        KeyBinding binding_config = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.openoptimizemc.config", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_L, "key.category.first.test"));
+        KeyBinding binding_togglePlayers = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.openoptimizemc.togglePlayers", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_I, "key.openoptimizemc.keybinds.categary"));
+        KeyBinding binding_toggleOnlyHeads = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.openoptimizemc.toggleOnlyHeads", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_U, "key.openoptimizemc.keybinds.categary"));
+        KeyBinding binding_config = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.openoptimizemc.config", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_L, "key.openoptimizemc.keybinds.categary"));
+
 
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -87,6 +101,10 @@ public class OpenOptimizeMc implements ClientModInitializer {
             } else if (configOpen) {
                 configOpen = false;
             }
+        });
+
+        UpdateChecker.check((build, name, pageUrl) -> {
+            isUpdateAvailable = true;
         });
     }
 

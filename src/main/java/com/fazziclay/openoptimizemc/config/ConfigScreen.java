@@ -8,7 +8,9 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
 
 import java.awt.*;
@@ -19,7 +21,6 @@ public class ConfigScreen extends Screen {
     private final Config config;
 
     private ButtonWidget update;
-    private boolean updateAvailable = false;
 
     public ConfigScreen(Screen parent) {
         super(Text.of("OpenOptimizeMC"));
@@ -29,68 +30,88 @@ public class ConfigScreen extends Screen {
     }
 
     private void addButton(int x, int y, int w, int h, String text, BooleanSupplier o, BooleanSupplier o1, String... tooltip) {
-        ButtonWidget button = ButtonWidget.builder(Text.of(text), ignore -> {
+        addButton(x, y, w, h, text, o, o1, true, tooltip);
+    }
+
+    private void addButton(int x, int y, int w, int h, String text, BooleanSupplier o, BooleanSupplier o1, boolean active, String... tooltip) {
+        addButton(x, y, w, h, text, o, o1,null, active, tooltip);
+    }
+
+    private void addButton(int x, int y, int w, int h, String text, BooleanSupplier o, BooleanSupplier o1, Runnable after, boolean active, String... tooltip) {
+        ButtonWidget button = ButtonWidget.builder(Text.translatable(text), ignore -> {
             stateButton(ignore, text, o1.getAsBoolean());
-        }).size(w, h).position(x, y).tooltip(tooltip.length == 0 ? null : Tooltip.of(Text.of(tooltip[0]))).build();
+            if (after != null) after.run();
+        }).size(w, h).position(x, y).tooltip(tooltip.length == 0 ? null : Tooltip.of(Text.translatable(tooltip[0]))).build();
         stateButton(button, text, o.getAsBoolean());
+        button.active = active;
         addSelectableChild(button);
         addDrawable(button);
     }
 
     @Override
     protected void init() {
-        ButtonWidget cancel = ButtonWidget.builder(Text.of("Close"), button -> this.close()).position(width - 60, height - 30).size(50, 20).build();
+        ButtonWidget cancel = ButtonWidget.builder(Text.translatable("openoptimizemc.close"), button -> this.close()).position(width - 60, height - 30).size(50, 20).build();
         addSelectableChild(cancel);
         addDrawable(cancel);
 
-        addButton(10, 20, 110, 20, "Render world", config::isRenderLevel, config::toggleRenderLevel, "Render chunks. §c(Not use this as X-ray in servers!)§r");
-        addButton(130, 20, 110, 20, "Render entities", config::isRenderEntities, config::toggleRenderEntities, "Fully control entities rendering (include shadow)");
-        addButton(250, 20, 150, 20, "Render block-entities", config::isRenderBlockEntities, config::toggleRenderBlockEntities, "Render block-entities (signs, chests, bell...)");
-        addButton(410, 20, 150, 20, "Update chunks", config::isUpdateChunks, config::toggleUpdateChunks, "Update chunks states");
+        addButton(10, 20, 70, 20, "feature.renderWorld.button", config::isRenderLevel, config::toggleRenderLevel, "feature.renderWorld.tooltip");
+        addButton(90, 20, 70, 20, "feature.renderEntities.button", config::isRenderEntities, config::toggleRenderEntities, this::recreateScreen, true, "feature.renderEntities.tooltip");
+        addButton(170, 20, 90, 20, "feature.renderBlockEntities.button", config::isRenderBlockEntities, config::toggleRenderBlockEntities, "feature.renderBlockEntities.tooltip");
+        addButton(270, 20, 90, 20, "feature.chunksUpdates.button", config::isUpdateChunks, config::toggleUpdateChunks, "feature.chunksUpdates.tooltip");
 
-        addButton(10, 70, 100, 20, "Render players", config::isRenderPlayers, config::toggleRenderPlayers, "Enable/Disable fully players rendering (no shadow control)");
-        addButton(120, 70, 130, 20, "Players only-head", config::isPlayersOnlyHeads, config::togglePlayersOnlyHeads, "Render only head of §8minecraft:player");
-        addButton(260, 70, 130, 20, "Players ModelPose", config::isPlayersModelPose, config::togglePlayersModelPose);
-        addButton(400, 70, 130, 20, "Primitive players", config::isPlayersPrimitive, config::togglePlayersPrimitive);
+        addButton(10, 70, 70, 20, "feature.renderPlayers.button", config::isRenderPlayers, config::toggleRenderPlayers, this::recreateScreen, (config.isRenderEntities()), "feature.renderPlayers.tooltip");
+        addButton(90, 70, 70, 20, "feature.renderPlayersOnlyHeads.button", config::isPlayersOnlyHeads, config::togglePlayersOnlyHeads, (config.isRenderEntities() && config.isRenderPlayers()), "feature.renderPlayersOnlyHeads.tooltip");
+        addButton(170, 70, 70, 20, "feature.playersModelPose.button", config::isPlayersModelPose, config::togglePlayersModelPose, (config.isRenderEntities() && config.isRenderPlayers()), "feature.playersModelPose.tooltip");
+        addButton(250, 70, 70, 20, "feature.renderPlayersPrimitive.button", config::isPlayersPrimitive, config::togglePlayersPrimitive, (config.isRenderEntities() && config.isRenderPlayers()), "feature.renderPlayersPrimitive.tooltip");
 
-        addButton(10, 95, 130, 20, "Render Armor", config::isRenderArmor, config::toggleRenderArmor, "Control armor rendering (25% of §8minecraft:player§r performance)");
-        addButton(150, 95, 130, 20, "HeldFeature", config::isHeldItemFeature, config::toggleHeldItemFeature, "Control rendering item on hand");
-        addButton(290, 95, 130, 20, "shouldRender(): true", config::isEntityAlwaysShouldRender, config::toggleEntityAlwaysShouldRender, "Always return true for EntityRenderDispatcher::shouldRender");
-        addButton(430, 95, 145, 20, "cache hasEnchantments", config::isCacheItemStackEnchantments, config::toggleCacheItemStackEnchantments, "Cache `hasEnchantments` for ItemStack");
+        addButton(10, 95, 80, 20, "feature.renderArmor.button", config::isRenderArmor, config::toggleRenderArmor, (config.isRenderEntities()), "feature.renderArmor.tooltip");
+        addButton(100, 95, 70, 20, "feature.heldItem.button", config::isHeldItemFeature, config::toggleHeldItemFeature, (config.isRenderEntities()), "feature.heldItem.tooltip");
+        addButton(180, 95, 70, 20, "feature.entityAlwaysRender.button", config::isEntityAlwaysShouldRender, config::toggleEntityAlwaysShouldRender, (config.isRenderEntities()), "feature.entityAlwaysRender.button");
+        addButton(260, 95, 80, 20, "feature.cacheItemStackEnchantments.button", config::isCacheItemStackEnchantments, config::toggleCacheItemStackEnchantments, "feature.cacheItemStackEnchantments.tooltip");
 
-        addButton(10, height - 30, 200, 20, "Advanced Profiler [Shift + F3]", config::isAdvancedProfiler, config::toggleAdvancedProfiler, "Advanced call push() and pop() for more performance information (Debug Pie in Shift+F3 menu)");
-        addButton(220, height - 30, 200, 20, "§2Automatic", config::isAIBehavior, config::toggleAIBehavior, "§aAutomatic manage all mod features by current performance");
+        addButton(10, height - 30, 100, 20, "feature.advancedDebugProfiler.button", config::isAdvancedProfiler, config::toggleAdvancedProfiler, "feature.advancedDebugProfiler.tooltip");
+        addButton(120, height - 30, 100, 20, "feature.openoptimizemc.automatic.button", config::isAIBehavior, config::toggleAIBehavior, "feature.openoptimizemc.automatic.tooltip");
 
 
-        update =  ButtonWidget.builder(Text.of("§c(!)§a Update Available! (click to open URL)"), button -> {
+        update = ButtonWidget.builder(Text.translatable("openoptimizemc.updateAvailable.button"), button -> {
             MinecraftClient.getInstance().setScreen(new ConfirmLinkScreen(b -> {
                 if (b) {
-                    Util.getOperatingSystem().open("https://fazziclay.github.io/openoptimizemc");
+                    Util.getOperatingSystem().open(OpenOptimizeMc.getUpdateURL());
                 } else {
                     MinecraftClient.getInstance().setScreen(ConfigScreen.this);
                 }
-            }, "https://fazziclay.github.io/openoptimizemc", true));
+            }, OpenOptimizeMc.getUpdateURL(), true));
         }).position(10, height - 60).size(200, 20).build();
-        update.visible = false;
+        update.visible = OpenOptimizeMc.isUpdateAvailable();
         addSelectableChild(update);
         addDrawable(update);
+    }
 
-        UpdateChecker.check((build, name, pageUrl) -> {
-            update.visible = true;
-            updateAvailable = true;
-        });
+    private void recreateScreen() {
+        client.setScreen(new ConfigScreen(parent));
     }
 
     private void stateButton(ButtonWidget button, String s, boolean b) {
-        button.setMessage(Text.of(s + ": " + (b ? "§aON" : "§cOFF")));
+        if (b) {
+            button.setMessage(Text.translatable("openoptimizemc.on.composed", Text.translatable(s)));
+        } else {
+            button.setMessage(Text.translatable("openoptimizemc.off.composed", Text.translatable(s)));
+        }
     }
 
     int i = 0;
+    private static final Formatting[] UPDATE_AVAILABLE_FORMATTINGS = {
+            Formatting.YELLOW,
+            Formatting.RED,
+            Formatting.GREEN,
+            Formatting.WHITE,
+            Formatting.LIGHT_PURPLE
+    };
     @Override
     public void tick() {
-        if (updateAvailable) {
+        if (OpenOptimizeMc.isUpdateAvailable()) {
             i++;
-            update.visible = i % 30 != 0;
+            update.setMessage(Text.translatable("openoptimizemc.updateAvailable.button").formatted(Formatting.BOLD).formatted(UPDATE_AVAILABLE_FORMATTINGS[(i / 10) % (UPDATE_AVAILABLE_FORMATTINGS.length-1)]));
         }
     }
 
