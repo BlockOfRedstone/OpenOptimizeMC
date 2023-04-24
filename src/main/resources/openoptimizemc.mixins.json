@@ -1,0 +1,29 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.fazziclay.openoptimizemc.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "plugin": "com.fazziclay.openoptimizemc.mixin.MixinConfig",
+  "mixins": [
+    "client.ItemStackMixin",
+    "client.gui.hud.DebugHudMixin"
+  ],
+  "client": [
+    "client.MinecraftClientMixin",
+    "client.render.WorldRendererMixin",
+    "client.render.block.entity.BlockEntityRenderDispatcherMixin",
+    "client.render.entity.EntityRenderDispatcherMixin",
+    "client.render.entity.PlayerEntityRendererMixin",
+    "client.render.entity.feature.ArmorFeatureRendererMixin",
+    "client.render.entity.feature.CapeFeatureRendererMixin",
+    "client.render.entity.feature.ElytraFeatureRendererMixin",
+    "client.render.entity.feature.HeadFeatureRendererMixin",
+    "client.render.entity.feature.HeldItemFeatureRendererMixin",
+    "client.render.entity.feature.StuckObjectsFeatureRendererMixin",
+    "client.render.entity.model.AnimalModelMixin",
+    "client.render.entity.model.BipedEntityModelMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

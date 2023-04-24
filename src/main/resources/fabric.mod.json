@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "openoptimizemc",
+  "version": "${version}",
+
+  "name": "OpenOptimizeMc",
+  "description": "Optimize minecraft",
+  "authors": [
+    "FazziCLAY"
+  ],
+  "contact": {
+    "homepage": "https://fazziclay.github.io/",
+    "sources": "https://github.com/FazziCLAY/OpenOptimizeMc"
+  },
+
+  "license": "CC0-1.0",
+
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "com.fazziclay.openoptimizemc.OpenOptimizeMc"
+    ],
+    "modmenu": [
+      "com.fazziclay.openoptimizemc.config.ModMenu"
+    ]
+  },
+  "mixins": [
+    "openoptimizemc.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.17",
+    "fabric-api": "*",
+    "minecraft": "~1.19.2",
+    "java": ">=17"
+  }
+}
