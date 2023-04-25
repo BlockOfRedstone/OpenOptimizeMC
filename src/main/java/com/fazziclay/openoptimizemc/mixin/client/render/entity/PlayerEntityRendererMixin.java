@@ -13,18 +13,15 @@ import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Random;
 
 @Mixin(PlayerEntityRenderer.class)
 public abstract class PlayerEntityRendererMixin<M> extends LivingEntityRenderer<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>> {
-    @Shadow protected abstract void setModelPose(AbstractClientPlayerEntity player);
-
     private static final String OP_OPENOPTIMIZEMC_MIXIN = "OpenOptimizeMC mixin";
     private static final BehaviorManager behaviorManager = OpenOptimizeMc.getBehaviorManager();
 
@@ -33,22 +30,19 @@ public abstract class PlayerEntityRendererMixin<M> extends LivingEntityRenderer<
         super(ctx, model, shadowRadius);
     }
 
-    /**
-     * @author FazziCLAY ( <a href="https://fazziclay.github.io">My site</a> )
-     * @reason Add ONLY_HEADS, IS_RENDER_PlAYERS, IS_PLAYER_MODEL_POSE
-     */
-    @Overwrite
-    public void render(AbstractClientPlayerEntity abstractClientPlayerEntity, float yaw, float tickDelta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light) {
-        if (!behaviorManager.getBehavior().renderPlayers()) {
+    @Inject(at = @At("HEAD"), method = "render(Lnet/minecraft/client/network/AbstractClientPlayerEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", cancellable = true)
+    private void render$mixin(AbstractClientPlayerEntity abstractClientPlayerEntity, float yaw, float tickDelta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, CallbackInfo ci) {
+        if (!behaviorManager.getBehavior().renderPlayers(abstractClientPlayerEntity)) {
+            ci.cancel();
             return;
         }
         OP.push(OP_OPENOPTIMIZEMC_MIXIN);
         if (behaviorManager.getBehavior().cubePrimitivePlayers(abstractClientPlayerEntity)) {
             renderCubePrimitivePlayer(abstractClientPlayerEntity, matrixStack, vertexConsumerProvider, light);
             OP.pop();
+            ci.cancel();
             return;
         }
-        setModelPose(abstractClientPlayerEntity);
         if (behaviorManager.getBehavior().onlyHeadPlayers(abstractClientPlayerEntity)) {
             PlayerEntityModel<AbstractClientPlayerEntity> playerEntityModel = getModel();
             playerEntityModel.setVisible(false);
@@ -56,7 +50,14 @@ public abstract class PlayerEntityRendererMixin<M> extends LivingEntityRenderer<
             playerEntityModel.hat.visible = true;
         }
         OP.pop();
-        super.render(abstractClientPlayerEntity, yaw, tickDelta, matrixStack, vertexConsumerProvider, light);
+    }
+
+    @Inject(at = @At("HEAD"), method = "setModelPose", cancellable = true)
+    private void setModelPose$mixin(AbstractClientPlayerEntity player, CallbackInfo ci) {
+        if (behaviorManager.getBehavior().onlyHeadPlayers(player)) {
+            ci.cancel();
+            return;
+        }
     }
 
     public Random RANDOM = new Random();

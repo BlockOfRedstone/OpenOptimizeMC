@@ -18,8 +18,8 @@
   "feature.renderPlayers.tooltip": "Рендерить ли игроков.",
   "feature.renderPlayersOnlyHeads.button": "Только голова",
   "feature.renderPlayersOnlyHeads.tooltip": "Отбросить от игрока всё, и оставить только голову. (Очень поможет в людных местах)",
-  "feature.playersModelPose.button": "ModelPose",
-  "feature.playersModelPose.tooltip": "setModelPose(); Метод для изменения модели игрока в определённых условиях (предмет в руке, спектатор)",
+  "feature.playersModelPose.button": "-",
+  "feature.playersModelPose.tooltip": "§c(Не поддерживается начиная с версии v1.0.6)",
   "feature.renderPlayersPrimitive.button": "Притимив",
   "feature.renderPlayersPrimitive.tooltip": "Рендерить на месте игрока куб. (99% прирост FPS в людных местах)",
   "feature.renderArmor.button": "Броня",
@@ -35,5 +35,7 @@
   "feature.openoptimizemc.automatic.button": "Автоматически",
   "feature.openoptimizemc.automatic.tooltip": "Автоматическое переключение между всеми этими функциями в зависимости от FPS и обстановки вокруг",
   "openoptimizemc.updateAvailable.button": "Доступна новая версия",
-  "openoptimizemc.updateAvailable.chat": "Доступна новая версия: Откройте конфиг плагина"
+  "openoptimizemc.updateAvailable.chat": "Доступна новая версия: Откройте конфиг плагина",
+  "feature.notApplyFeaturesForSelfPlayer.button": "Не фиксить себя",
+  "feature.notApplyFeaturesForSelfPlayer.tooltip": "Не применять все фичи по оптимизации к текущему игроку. (Особенно удобно при использовании F5)"
 }

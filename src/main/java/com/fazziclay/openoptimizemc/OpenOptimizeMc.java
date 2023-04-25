@@ -8,14 +8,17 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.entity.Entity;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.Objects;
 
 public class OpenOptimizeMc implements ClientModInitializer {
     public static final String ID = "openoptimizemc";
@@ -60,6 +63,13 @@ public class OpenOptimizeMc implements ClientModInitializer {
 
     public static String getUpdateURL() {
         return "https://fazziclay.github.io/openoptimizemc?from_build="+Version.BUILD+"&from_name="+Version.NAME+"&from_dev="+Version.DEVELOPMENT;
+    }
+
+    public static boolean isSelfPlayer(Entity player) {
+        if (MinecraftClient.getInstance().player != null) {
+            return Objects.equals(player.getUuid(), MinecraftClient.getInstance().player.getUuid());
+        }
+        return false;
     }
 
     @Override

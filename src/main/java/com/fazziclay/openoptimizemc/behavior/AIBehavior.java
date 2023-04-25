@@ -106,7 +106,7 @@ public class AIBehavior implements Behavior {
     }
 
     @Override
-    public boolean renderPlayers() {
+    public boolean renderPlayers(AbstractClientPlayerEntity abstractClientPlayerEntity) {
         return fps > 0;
     }
 
@@ -117,11 +117,13 @@ public class AIBehavior implements Behavior {
 
     @Override
     public boolean cubePrimitivePlayers(AbstractClientPlayerEntity player) {
+        if (OpenOptimizeMc.isSelfPlayer(player)) return fps <= 2;
         return fps < 10;
     }
 
     @Override
     public boolean renderEntityHeldItem(LivingEntity entity) {
+        if (OpenOptimizeMc.isSelfPlayer(entity)) return fps <= 7;
         return fps > 15;
     }
 
@@ -142,6 +144,7 @@ public class AIBehavior implements Behavior {
 
     @Override
     public boolean onlyHeadPlayers(AbstractClientPlayerEntity player) {
+        if (OpenOptimizeMc.isSelfPlayer(player)) return fps <= 6;
         return fps < 25;
     }
 

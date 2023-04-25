@@ -14,7 +14,7 @@ public interface Behavior {
     boolean renderBlockEntities(BlockEntity block);
     boolean renderEntityArmor(LivingEntity livingEntity);
     boolean renderEntityElytra(LivingEntity livingEntity);
-    boolean renderPlayers();
+    boolean renderPlayers(AbstractClientPlayerEntity abstractClientPlayerEntity);
     boolean renderPlayersCapes(AbstractClientPlayerEntity pla);
 
     boolean cubePrimitivePlayers(AbstractClientPlayerEntity player);

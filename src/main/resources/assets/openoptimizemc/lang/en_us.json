@@ -18,8 +18,8 @@
   "feature.renderPlayers.tooltip": "Render players",
   "feature.renderPlayersOnlyHeads.button": "Only head",
   "feature.renderPlayersOnlyHeads.tooltip": "Render only head of minecraft:player",
-  "feature.playersModelPose.button": "ModelPose",
-  "feature.playersModelPose.tooltip": "setModelPose(); A method for changing a player's model under certain conditions (item in hand, spectator)",
+  "feature.playersModelPose.button": "-",
+  "feature.playersModelPose.tooltip": "§c(Not support since v1.0.6)",
   "feature.renderPlayersPrimitive.button": "Primitive",
   "feature.renderPlayersPrimitive.tooltip": "Render a cube in the player's place. (99% fps boost)",
   "feature.renderArmor.button": "Armor",
@@ -35,5 +35,7 @@
   "feature.openoptimizemc.automatic.button": "Automatic",
   "feature.openoptimizemc.automatic.tooltip": "Automatic switching between all these functions depending on the FPS and the environment around",
   "openoptimizemc.updateAvailable.button": "New version available",
-  "openoptimizemc.updateAvailable.chat": "New version available: Open config!"
+  "openoptimizemc.updateAvailable.chat": "New version available: Open config!",
+  "feature.notApplyFeaturesForSelfPlayer.button": "Keep me unoptimized",
+  "feature.notApplyFeaturesForSelfPlayer.tooltip": "Do not apply all optimization features to the current player. (Especially convenient when using F5)"
 }

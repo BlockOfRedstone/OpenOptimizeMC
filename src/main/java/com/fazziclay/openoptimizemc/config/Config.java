@@ -21,8 +21,7 @@ public class Config {
     private boolean renderPlayers = true;
     @SerializedName("playersOnlyHeads")
     private boolean playersOnlyHeads = false;
-    @SerializedName("playersModelPose")
-    private boolean playersModelPose = true;
+
     @SerializedName("renderEntities")
     private boolean renderEntities = true;
 
@@ -49,7 +48,10 @@ public class Config {
     @SerializedName("AIBehavior")
     private boolean isAIBehavior = true;
     @SerializedName("updateChunks")
-    private boolean updateChunks;
+    private boolean updateChunks = true;
+
+    @SerializedName("notApplyFeaturesForSelfPlayer")
+    private boolean notApplyFeaturesForSelfPlayer = true;
 
 
     public void save() {
@@ -131,20 +133,6 @@ public class Config {
         playersOnlyHeads = !playersOnlyHeads;
         save();
         return playersOnlyHeads;
-    }
-
-
-
-    // PLAYERS MODEL POSE
-    public boolean isPlayersModelPose() {return playersModelPose;}
-    public void setPlayersModelPose(boolean playersModelPose) {
-        this.playersModelPose = playersModelPose;
-        save();
-    }
-    public boolean togglePlayersModelPose() {
-        playersModelPose = !playersModelPose;
-        save();
-        return playersModelPose;
     }
 
 
@@ -294,5 +282,20 @@ public class Config {
         OpenOptimizeMc.getBehaviorManager().setBehaviorType(isAIBehavior ? BehaviorType.AI_AUTOMATIC : BehaviorType.CONFIG_DIRECTLY);
         save();
         return isAIBehavior;
+    }
+
+    public boolean isNotApplyFeaturesForSelfPlayer() {
+        return notApplyFeaturesForSelfPlayer;
+    }
+
+    public void setNotApplyFeaturesForSelfPlayer(boolean notApplyFeaturesForSelfPlayer) {
+        this.notApplyFeaturesForSelfPlayer = notApplyFeaturesForSelfPlayer;
+        save();
+    }
+
+    public boolean toggleNotApplyFeaturesForSelfPlayer() {
+        this.notApplyFeaturesForSelfPlayer = !this.notApplyFeaturesForSelfPlayer;
+        save();
+        return this.notApplyFeaturesForSelfPlayer;
     }
 }

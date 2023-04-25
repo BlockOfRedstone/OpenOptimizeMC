@@ -61,7 +61,7 @@ public class ConfigScreen extends Screen {
 
         addButton(10, 70, 70, 20, "feature.renderPlayers.button", config::isRenderPlayers, config::toggleRenderPlayers, this::recreateScreen, (config.isRenderEntities()), "feature.renderPlayers.tooltip");
         addButton(90, 70, 70, 20, "feature.renderPlayersOnlyHeads.button", config::isPlayersOnlyHeads, config::togglePlayersOnlyHeads, (config.isRenderEntities() && config.isRenderPlayers()), "feature.renderPlayersOnlyHeads.tooltip");
-        addButton(170, 70, 70, 20, "feature.playersModelPose.button", config::isPlayersModelPose, config::togglePlayersModelPose, (config.isRenderEntities() && config.isRenderPlayers()), "feature.playersModelPose.tooltip");
+        addButton(170, 70, 70, 20, "feature.notApplyFeaturesForSelfPlayer.button", config::isNotApplyFeaturesForSelfPlayer, config::toggleNotApplyFeaturesForSelfPlayer, true, "feature.notApplyFeaturesForSelfPlayer.tooltip");
         addButton(250, 70, 70, 20, "feature.renderPlayersPrimitive.button", config::isPlayersPrimitive, config::togglePlayersPrimitive, (config.isRenderEntities() && config.isRenderPlayers()), "feature.renderPlayersPrimitive.tooltip");
 
         addButton(10, 95, 80, 20, "feature.renderArmor.button", config::isRenderArmor, config::toggleRenderArmor, (config.isRenderEntities()), "feature.renderArmor.tooltip");
