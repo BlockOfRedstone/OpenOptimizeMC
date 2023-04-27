@@ -4,13 +4,17 @@ import com.fazziclay.openoptimizemc.MathConst;
 import com.fazziclay.openoptimizemc.OP;
 import com.fazziclay.openoptimizemc.OpenOptimizeMc;
 import com.fazziclay.openoptimizemc.behavior.BehaviorManager;
+import com.fazziclay.openoptimizemc.experemental.ExperimentalRenderer;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
+import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,6 +28,7 @@ import java.util.Random;
 public abstract class PlayerEntityRendererMixin<M> extends LivingEntityRenderer<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>> {
     private static final String OP_OPENOPTIMIZEMC_MIXIN = "OpenOptimizeMC mixin";
     private static final BehaviorManager behaviorManager = OpenOptimizeMc.getBehaviorManager();
+    private static final ExperimentalRenderer experimentalRenderer = new ExperimentalRenderer();
 
 
     public PlayerEntityRendererMixin(EntityRendererFactory.Context ctx, PlayerEntityModel<AbstractClientPlayerEntity> model, float shadowRadius) {
@@ -37,6 +42,12 @@ public abstract class PlayerEntityRendererMixin<M> extends LivingEntityRenderer<
             return;
         }
         OP.push(OP_OPENOPTIMIZEMC_MIXIN);
+        if (behaviorManager.getBehavior().cubePrimitivePlayers(abstractClientPlayerEntity)) { // TODO: WARINIG!!!!!!!!!!!!!!!!!!!
+            renderDirtRenderer(abstractClientPlayerEntity, matrixStack, vertexConsumerProvider, light);
+            OP.pop();
+            ci.cancel();
+            return;
+        }
         if (behaviorManager.getBehavior().cubePrimitivePlayers(abstractClientPlayerEntity)) {
             renderCubePrimitivePlayer(abstractClientPlayerEntity, matrixStack, vertexConsumerProvider, light);
             OP.pop();
@@ -58,6 +69,13 @@ public abstract class PlayerEntityRendererMixin<M> extends LivingEntityRenderer<
             ci.cancel();
             return;
         }
+    }
+
+    private void renderDirtRenderer(AbstractClientPlayerEntity player, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, int light) {
+        experimentalRenderer.render(player, matrices);
+        // (!) THIS IS FIX OF "OpenGL debug message: ..." spam in logs...
+        new VertexBuffer().bind(); //TODO: Fix this.
+        MinecraftClient.getInstance().getItemRenderer().renderItem(player.getActiveItem(), ModelTransformationMode.FIXED, true, matrices, vertexConsumerProvider, light, 0, MinecraftClient.getInstance().getItemRenderer().getModels().getModel(player.getActiveItem()));
     }
 
     public Random RANDOM = new Random();
