@@ -1,4 +1,4 @@
-package com.fazziclay.openoptimizemc.m;
+package com.fazziclay.openoptimizemc.util.m;
 
 public interface CachedHasEnchantments {
     boolean hasEnchantmentsGetCached();

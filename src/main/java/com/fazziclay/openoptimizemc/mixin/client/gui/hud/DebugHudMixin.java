@@ -1,6 +1,6 @@
 package com.fazziclay.openoptimizemc.mixin.client.gui.hud;
 
-import com.fazziclay.openoptimizemc.Debug;
+import com.fazziclay.openoptimizemc.util.Debug;
 import com.fazziclay.openoptimizemc.OpenOptimizeMc;
 import net.minecraft.client.gui.hud.DebugHud;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,6 +17,6 @@ public class DebugHudMixin {
     @Inject(at = @At("RETURN"), method = "getLeftText")
     private void getLeftText(CallbackInfoReturnable<List<String>> info) {
         List<String> r = info.getReturnValue();
-        if (DEBUG)r.add(Debug.getText());
+        if (DEBUG) r.add(Debug.getText());
     }
 }

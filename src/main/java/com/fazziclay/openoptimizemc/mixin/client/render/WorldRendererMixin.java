@@ -1,6 +1,6 @@
 package com.fazziclay.openoptimizemc.mixin.client.render;
 
-import com.fazziclay.openoptimizemc.OP;
+import com.fazziclay.openoptimizemc.util.OP;
 import com.fazziclay.openoptimizemc.OpenOptimizeMc;
 import com.fazziclay.openoptimizemc.behavior.BehaviorManager;
 import net.minecraft.client.render.Camera;

@@ -10,7 +10,7 @@ public class ResourcesUtil {
         try {
             return new String(is.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Exception in ResourcesUtil.getText.", e);
         }
     }
 }

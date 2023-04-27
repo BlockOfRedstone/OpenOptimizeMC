@@ -6,6 +6,9 @@ import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 
+/**
+ * Mod behavior interface
+ */
 public interface Behavior {
     void tick(MinecraftClient client);
 

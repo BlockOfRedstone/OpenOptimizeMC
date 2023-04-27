@@ -1,6 +1,6 @@
 package com.fazziclay.openoptimizemc.mixin.client.render.entity.model;
 
-import com.fazziclay.openoptimizemc.OP;
+import com.fazziclay.openoptimizemc.util.OP;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.entity.model.AnimalModel;
 import net.minecraft.client.util.math.MatrixStack;

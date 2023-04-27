@@ -8,6 +8,9 @@ import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 
+/**
+ * Mod behavior. Directly from config
+ */
 public class ConfigBehavior implements Behavior {
     private final Config config;
 

@@ -1,7 +1,7 @@
 package com.fazziclay.openoptimizemc.mixin.client;
 
 import com.fazziclay.openoptimizemc.behavior.BehaviorManager;
-import com.fazziclay.openoptimizemc.m.CachedHasEnchantments;
+import com.fazziclay.openoptimizemc.util.m.CachedHasEnchantments;
 import com.fazziclay.openoptimizemc.OpenOptimizeMc;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;

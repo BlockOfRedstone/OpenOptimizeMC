@@ -1,14 +1,13 @@
 package com.fazziclay.openoptimizemc.config;
 
 import com.fazziclay.openoptimizemc.OpenOptimizeMc;
-import com.fazziclay.openoptimizemc.UpdateChecker;
+import com.fazziclay.openoptimizemc.util.UpdateChecker;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
@@ -76,13 +75,13 @@ public class ConfigScreen extends Screen {
         update = ButtonWidget.builder(Text.translatable("openoptimizemc.updateAvailable.button"), button -> {
             MinecraftClient.getInstance().setScreen(new ConfirmLinkScreen(b -> {
                 if (b) {
-                    Util.getOperatingSystem().open(OpenOptimizeMc.getUpdateURL());
+                    Util.getOperatingSystem().open(UpdateChecker.getUpdateURL());
                 } else {
                     MinecraftClient.getInstance().setScreen(ConfigScreen.this);
                 }
-            }, OpenOptimizeMc.getUpdateURL(), true));
+            }, UpdateChecker.getUpdateURL(), true));
         }).position(10, height - 60).size(200, 20).build();
-        update.visible = OpenOptimizeMc.isUpdateAvailable();
+        update.visible = UpdateChecker.isUpdateAvailable();
         addSelectableChild(update);
         addDrawable(update);
     }
@@ -109,7 +108,7 @@ public class ConfigScreen extends Screen {
     };
     @Override
     public void tick() {
-        if (OpenOptimizeMc.isUpdateAvailable()) {
+        if (UpdateChecker.isUpdateAvailable()) {
             i++;
             update.setMessage(Text.translatable("openoptimizemc.updateAvailable.button").formatted(Formatting.BOLD).formatted(UPDATE_AVAILABLE_FORMATTINGS[(i / 10) % (UPDATE_AVAILABLE_FORMATTINGS.length-1)]));
         }

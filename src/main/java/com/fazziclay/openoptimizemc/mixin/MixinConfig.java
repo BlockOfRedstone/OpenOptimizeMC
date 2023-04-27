@@ -1,7 +1,5 @@
 package com.fazziclay.openoptimizemc.mixin;
 
-import com.fazziclay.openoptimizemc.OpenOptimizeMc;
-import net.minecraft.entity.player.PlayerEntity;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -22,7 +20,7 @@ public class MixinConfig implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        //OpenOptimizeMc.LOGGER.info("disallow mixin by reason: 'not for public!': tar=" +targetClassName + "; mix="+mixinClassName);
+        //if (Version.DEVELOPMENT) OpenOptimizeMc.LOGGER.info("OpenOptimizeMC mixin apply. target=" +targetClassName + "; mixin="+mixinClassName);
         return true;
     }
 

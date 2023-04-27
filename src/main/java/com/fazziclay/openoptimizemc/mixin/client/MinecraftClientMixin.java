@@ -1,20 +1,18 @@
 package com.fazziclay.openoptimizemc.mixin.client;
 
-import com.fazziclay.openoptimizemc.OpenOptimizeMc;
-import com.fazziclay.openoptimizemc.m.FpsContainer;
+import com.fazziclay.openoptimizemc.util.m.FpsContainer;
+import com.fazziclay.openoptimizemc.util.UpdateChecker;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TextContent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.fazziclay.openoptimizemc.OP;
+import com.fazziclay.openoptimizemc.util.OP;
 
 @Mixin(MinecraftClient.class)
 public class MinecraftClientMixin implements FpsContainer {
@@ -27,7 +25,7 @@ public class MinecraftClientMixin implements FpsContainer {
 
     @Inject(at = @At("HEAD"), method = "joinWorld")
     private void joinWorld(ClientWorld world, CallbackInfo ci) {
-        if (OpenOptimizeMc.isUpdateAvailable()) {
+        if (UpdateChecker.isUpdateAvailable()) {
             new Thread(() -> {
                 try {
                     Thread.sleep(6*1000);

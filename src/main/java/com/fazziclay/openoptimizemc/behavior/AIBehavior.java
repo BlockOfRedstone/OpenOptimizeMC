@@ -1,14 +1,18 @@
 package com.fazziclay.openoptimizemc.behavior;
 
-import com.fazziclay.openoptimizemc.Debug;
+import com.fazziclay.openoptimizemc.util.Debug;
 import com.fazziclay.openoptimizemc.OpenOptimizeMc;
-import com.fazziclay.openoptimizemc.m.FpsContainer;
+import com.fazziclay.openoptimizemc.util.m.FpsContainer;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 
+/**
+ * Mod behavior. By current game states (fps, and etc...)
+ * This is "Automatic" function in mod config
+ */
 public class AIBehavior implements Behavior {
     private static final boolean LOG = OpenOptimizeMc.debug(false);
 

@@ -1,6 +1,6 @@
 package com.fazziclay.openoptimizemc.config;
 
-import com.fazziclay.openoptimizemc.OP;
+import com.fazziclay.openoptimizemc.util.OP;
 import com.fazziclay.openoptimizemc.OpenOptimizeMc;
 import com.fazziclay.openoptimizemc.behavior.BehaviorType;
 import com.google.gson.Gson;

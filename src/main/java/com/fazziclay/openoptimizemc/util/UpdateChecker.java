@@ -1,12 +1,13 @@
-package com.fazziclay.openoptimizemc;
+package com.fazziclay.openoptimizemc.util;
 
-import com.fazziclay.openoptimizemc.util.NetworkUtil;
+import com.fazziclay.openoptimizemc.Version;
 
 import java.io.IOException;
 
 public class UpdateChecker {
     private static final String LATEST_BUILD_URL = "https://fazziclay.github.io/api/project_4/v1/latest_build";
     private static boolean hasNoUpdates = false;
+    private static boolean isUpdateAvailable = false;
 
     public static int parseLatestBuild() {
         try {
@@ -30,6 +31,18 @@ public class UpdateChecker {
         thread.setName("OpenOptimizeMc UpdateChecker");
         thread.setDaemon(true);
         thread.start();
+    }
+
+    public static String getUpdateURL() {
+        return "https://fazziclay.github.io/openoptimizemc?from_build="+Version.BUILD+"&from_name="+Version.NAME+"&from_dev="+Version.DEVELOPMENT;
+    }
+
+    public static boolean isUpdateAvailable() {
+        return isUpdateAvailable;
+    }
+
+    public static void initialCheck() {
+        check((build, name, pageUrl) -> isUpdateAvailable = true);
     }
 
     public interface Result {

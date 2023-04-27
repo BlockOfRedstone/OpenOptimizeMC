@@ -1,6 +1,6 @@
 package com.fazziclay.openoptimizemc.behavior;
 
-import com.fazziclay.openoptimizemc.Debug;
+import com.fazziclay.openoptimizemc.util.Debug;
 import com.fazziclay.openoptimizemc.config.Config;
 import net.minecraft.client.MinecraftClient;
 
