@@ -4,18 +4,17 @@
   "version": "${version}",
 
   "name": "OpenOptimizeMc",
-  "description": "Optimize minecraft",
+  "description": "Advanced optimization minecraft client-side mod",
   "authors": [
     "FazziCLAY"
   ],
   "contact": {
     "homepage": "https://fazziclay.github.io/",
-    "sources": "https://github.com/FazziCLAY/OpenOptimizeMc"
+    "sources": "https://github.com/FazziCLAY/OpenOptimizeMc",
+    "issues": "https://github.com/FazziCLAY/OpenOptimizeMc/issues"
   },
-
   "license": "GNU GPLv3",
-
-  "environment": "*",
+  "environment": "client",
   "entrypoints": {
     "client": [
       "com.fazziclay.openoptimizemc.OpenOptimizeMc"
