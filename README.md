@@ -18,3 +18,5 @@ Links: [*Discord*](https://discord.gg/Dv3pk7uMWv)
 * Disable Block-Entities rendering
 * Disable Armor rendering
 * Primitive players (optimized rendering with OpenGL VAO VBO)
+
+    Example: <img src="https://user-images.githubusercontent.com/68351787/234925468-c5c0a78f-ca55-4b07-93f0-a3ec19ee83ff.png" alt= “” width="150" height="130">
