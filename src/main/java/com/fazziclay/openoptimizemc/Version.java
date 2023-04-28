@@ -5,6 +5,6 @@ package com.fazziclay.openoptimizemc;
  */
 public class Version {
     public static final boolean DEVELOPMENT = true;
-    public static final int BUILD = 19;
-    public static final String NAME = "1.0.7 (unstable)";
+    public static final int BUILD = 20;
+    public static final String NAME = "1.0.7.1 (unstable)";
 }
