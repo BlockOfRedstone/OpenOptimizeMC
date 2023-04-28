@@ -7,11 +7,17 @@ import com.fazziclay.openoptimizemc.util.OP;
 import com.fazziclay.openoptimizemc.util.ResourcesUtil;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
+import de.javagl.obj.Obj;
+import de.javagl.obj.ObjData;
+import de.javagl.obj.ObjReader;
+import de.javagl.obj.ObjUtils;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.render.BufferRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import org.joml.Matrix4f;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -22,40 +28,41 @@ public class ExperimentalRenderer {
 
     public static final ExperimentalRenderer INSTANCE = new ExperimentalRenderer();
     private static float[] positions_colors2 = {
-            -0.5f, -0.5f, -0.5f,    -1.f,  0.f,  0.f,     0.f, 0.f,              // 0
-            -0.5f,  0.5f, -0.5f,    -1.f,  0.f,  0.f,     1.f, 0.f,              // 1
-            -0.5f,  0.5f,  0.5f,    -1.f,  0.f,  0.f,     1.f, 1.f,              // 2
-            -0.5f, -0.5f,  0.5f,    -1.f,  0.f,  0.f,     0.f, 1.f,              // 3
+            // FRONT
+            -0.5f, -0.5f, -0.5f,    1.f,  1.f,  1.f,     0.5f, 0.f,              // 0
+            -0.5f,  0.5f, -0.5f,    1.f,  1.f,  1.f,     0.5f, 0.f,              // 1
+            -0.5f,  0.5f,  0.5f,    1.f,  1.f,  1.f,     0.5f, 0.f,              // 2
+            -0.5f, -0.5f,  0.5f,    1.f,  1.f,  1.f,     0.7f, 0.f,              // 3
 
             // BACK
-            0.5f, -0.5f, -0.5f,     1.f,  0.f,  0.f,     1.f, 0.f,              // 4
-            0.5f,  0.5f, -0.5f,     1.f,  0.f,  0.f,     0.f, 0.f,              // 5
-            0.5f,  0.5f,  0.5f,     1.f,  0.f,  0.f,     0.f, 1.f,              // 6
-            0.5f, -0.5f,  0.5f,     1.f,  0.f,  0.f,     1.f, 1.f,              // 7
+            0.5f, -0.5f, -0.5f,     1.f,  1.f,  1.f,     1.f, 0.f,              // 4
+            0.5f,  0.5f, -0.5f,     1.f,  1.f,  1.f,     1.f, 0.f,              // 5
+            0.5f,  0.5f,  0.5f,     1.f,  1.f,  1.f,     1.f, 0.f,              // 6
+            0.5f, -0.5f,  0.5f,     1.f,  1.f,  1.f,     1.f, 0.f,              // 7
 
             // RIGHT
-            -0.5f,  0.5f, -0.5f,     0.f,  1.f,  0.f,     0.f, 0.f,              // 8
-            0.5f,  0.5f, -0.5f,     0.f,  1.f,  0.f,     1.f, 0.f,              // 9
-            0.5f,  0.5f,  0.5f,     0.f,  1.f,  0.f,     1.f, 1.f,              // 10
-            -0.5f,  0.5f,  0.5f,     0.f,  1.f,  0.f,     0.f, 1.f,              // 11
+            -0.5f,  0.5f, -0.5f,    1.f,  1.f,  1.f,     1.f, 0.f,              // 8
+            0.5f,  0.5f, -0.5f,     1.f,  1.f,  1.f,     1.f, 0.f,              // 9
+            0.5f,  0.5f,  0.5f,     1.f,  1.f,  1.f,     1.f, 0.f,              // 10
+            -0.5f,  0.5f,  0.5f,    1.f,  1.f,  1.f,     1.f, 0.f,              // 11
 
             // LEFT
-            -0.5f, -0.5f, -0.5f,     0.f, -1.f,  0.f,     1.f, 0.f,              // 12
-            0.5f, -0.5f, -0.5f,     0.f, -1.f,  0.f,     0.f, 0.f,              // 13
-            0.5f, -0.5f,  0.5f,     0.f, -1.f,  0.f,     0.f, 1.f,              // 14
-            -0.5f, -0.5f,  0.5f,     0.f, -1.f,  0.f,     1.f, 1.f,              // 15
+            -0.5f, -0.5f, -0.5f,    1.f, 1.f,  1.f,     0.9f, 0.f,              // 12
+            0.5f, -0.5f, -0.5f,     1.f, 1.f,  1.f,     0.5f, 0.f,              // 13
+            0.5f, -0.5f,  0.5f,     1.f, 1.f,  1.f,     0.5f, 0.f,              // 14
+            -0.5f, -0.5f,  0.5f,    1.f, 1.f,  1.f,     0.5f, 0.f,              // 15
 
             // TOP
-            -0.5f, -0.5f,  0.5f,     0.f,  0.f,  1.f,     0.f, 0.f,              // 16
-            -0.5f,  0.5f,  0.5f,     0.f,  0.f,  1.f,     1.f, 0.f,              // 17
-            0.5f,  0.5f,  0.5f,     0.f,  0.f,  1.f,     1.f, 1.f,              // 18
-            0.5f, -0.5f,  0.5f,     0.f,  0.f,  1.f,     0.f, 1.f,              // 19
+            -0.5f, -0.5f,  0.5f,     1.f,  1.f,  1.f,    2.f, 0.f,              // 16
+            -0.5f,  0.5f,  0.5f,     1.f,  1.f,  1.f,    2.f, 0.f,              // 17
+            0.5f,  0.5f,  0.5f,     1.f,  1.f,  1.f,     2.f, 0.f,              // 18
+            0.5f, -0.5f,  0.5f,     1.f,  1.f,  1.f,     2.f, 0.f,              // 19
 
             // BOTTOM
-            -0.5f, -0.5f, -0.5f,    0.f,  0.f, -1.f,     0.f, 1.f,              // 20
-            -0.5f,  0.5f, -0.5f,    0.f,  0.f, -1.f,     1.f, 1.f,              // 21
-            0.5f,  0.5f, -0.5f,    0.f,  0.f, -1.f,     1.f, 0.f,              // 22
-            0.5f, -0.5f, -0.5f,    0.f,  0.f, -1.f,     0.f, 0.f,              // 23
+            -0.5f, -0.5f, -0.5f,   1.f,  1.f, 1.f,     1.f, 0.f,              // 20
+            -0.5f,  0.5f, -0.5f,   1.f,  1.f, 1.f,     1.f, 0.f,              // 21
+            0.5f,  0.5f, -0.5f,    1.f,  1.f, 1.f,     1.f, 0.f,              // 22
+            0.5f, -0.5f, -0.5f,    1.f,  1.f, 1.f,     1.f, 0.f,              // 23
     };
 
 
@@ -81,7 +88,13 @@ public class ExperimentalRenderer {
     private float globalK;
     private long lastCleanup = 0;
 
-    private void init() {
+    public void init() {
+        if (initialized) {
+            OpenOptimizeMc.LOGGER.info("WARNING! Double init called!!");
+            headShaderProgram = program("head");
+            return;
+        }
+        initialized = true;
         OP.push("ExperimentalRenderer:init");
         OpenOptimizeMc.LOGGER.info("Experimental initialized!");
 
@@ -90,16 +103,27 @@ public class ExperimentalRenderer {
         armsShaderProgram = program("arms");
         legsShaderProgram = program("legs");
 
+        Obj obj;
+        try {
+            obj = ObjUtils.convertToRenderable(ObjReader.read(ResourcesUtil.getInputStream("assets/openoptimizemc/obj/base_human.obj")));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        //positions_colors2 = ObjData.getVerticesArray(obj);
+        //indices = ObjData.getFaceVertexIndicesArray(obj);
+
         indexBuffer = new IndexBuffer(indices);
-        VBO cube_vbo = new VBO(positions_colors2, BufferLayout.create(BufferLayout.ShaderDataType.FLOAT3, BufferLayout.ShaderDataType.FLOAT3, BufferLayout.ShaderDataType.FLOAT2));
+        VBO cube_vbo = new VBO(positions_colors2, BufferLayout.create(BufferLayout.ShaderDataType.FLOAT3)); // , BufferLayout.ShaderDataType.FLOAT3, BufferLayout.ShaderDataType.FLOAT2
         vao = new VAO();
         vao.addVertexBuffer(cube_vbo);
         vao.setIndexBuffer(indexBuffer);
 
         chunchVao = new VAO();
 
-        indices = null;
-        positions_colors2 = null;
+        if (!OpenOptimizeMc.debug(true)) {
+            indices = null;
+            positions_colors2 = null;
+        }
         OP.pop();
     }
 
@@ -118,7 +142,7 @@ public class ExperimentalRenderer {
         entityList.put(entity, new RenderEntity(entity));
         Debug.setExperimentalRendererEntityListCount(entityList.size());
 
-        globalK = System.currentTimeMillis() / 3f % 50;
+        globalK = (float) (((double)System.currentTimeMillis() % 10000L) / 10L);
         Debug.setExperimentalRendererGlobalK(globalK);
         if (!initialized) {
             init();
@@ -161,7 +185,7 @@ public class ExperimentalRenderer {
         Matrix4f projectionMatrix = RenderSystem.getProjectionMatrix();
 
         OP.swap("for cycle");
-        for (DirtCuboid part : PARTS) {
+        for (DirtCuboid part : PARTS) { // TODO: 4/28/23 fix
             OP.push("Part " + part.name);
             if (player.isSpectator() && part != HEAD) return;
 
@@ -178,17 +202,24 @@ public class ExperimentalRenderer {
         }
         OP.swap("unbinds");
 
-        //VAO.unbind();
+
+        BufferRenderer.reset(); //VAO.unbind() functional in minecraft-system
         IndexBuffer.unbind();
-        //ShaderProgram.unbind();
+        ShaderProgram.unbind();
 
         OP.swap("Crunch vbo bind");
-        chunchVao.bind();
+        //chunchVao.bind();
+        //GameRenderer.getPositionColorProgram().bind();
         OP.pop();
         OP.pop();
     }
 
     private void setModelMatrix(ShaderProgram program, Matrix4f mat) {
+        //mat.scale(0.05f);
+        //mat.translate(0, -0.6f, 0);
+        //mat.rotateY((float) Math.PI);
+        //mat.scale(0.125f);
+        //mat.scale(1, 0.4f, 1);
         program.setMat4f("model_matrix", mat);
     }
 
@@ -209,6 +240,9 @@ public class ExperimentalRenderer {
             setModelMatrix(headShaderProgram, renderEntity.getHeadModelMatrix());
             headShaderProgram.setFloat("yaw", player.getYaw());
             headShaderProgram.setFloat("pitch", player.getPitch());
+            headShaderProgram.setFloat("entityColorR", renderEntity.getColorR());
+            headShaderProgram.setFloat("entityColorG", renderEntity.getColorG());
+            headShaderProgram.setFloat("entityColorB", renderEntity.getColorB());
             return headShaderProgram;
         }
     };
@@ -219,6 +253,9 @@ public class ExperimentalRenderer {
             bodyShaderProgram.bind();
             setModelMatrix(bodyShaderProgram, renderEntity.getBodyModelMatrix());
             bodyShaderProgram.setFloat("bodyYaw", player.bodyYaw);
+            headShaderProgram.setFloat("entityColorR", renderEntity.getColorR());
+            headShaderProgram.setFloat("entityColorG", renderEntity.getColorG());
+            headShaderProgram.setFloat("entityColorB", renderEntity.getColorB());
             return bodyShaderProgram;
         }
     };
@@ -232,6 +269,9 @@ public class ExperimentalRenderer {
             legsShaderProgram.setFloat("limb_speed", player.limbAnimator.getSpeed());
             legsShaderProgram.setFloat("_globalK", globalK);
             legsShaderProgram.setFloat("z_shift", 0.14f);
+            headShaderProgram.setFloat("entityColorR", renderEntity.getColorR());
+            headShaderProgram.setFloat("entityColorG", renderEntity.getColorG());
+            headShaderProgram.setFloat("entityColorB", renderEntity.getColorB());
             return legsShaderProgram;
         }
     };
@@ -245,6 +285,9 @@ public class ExperimentalRenderer {
             legsShaderProgram.setFloat("limb_speed", player.limbAnimator.getSpeed());
             legsShaderProgram.setFloat("_globalK", globalK);
             legsShaderProgram.setFloat("z_shift", -0.14f);
+            headShaderProgram.setFloat("entityColorR", renderEntity.getColorR());
+            headShaderProgram.setFloat("entityColorG", renderEntity.getColorG());
+            headShaderProgram.setFloat("entityColorB", renderEntity.getColorB());
             return legsShaderProgram;
         }
     };
@@ -258,6 +301,9 @@ public class ExperimentalRenderer {
             armsShaderProgram.setFloat("limb_speed", player.limbAnimator.getSpeed());
             armsShaderProgram.setFloat("_globalK", globalK);
             armsShaderProgram.setFloat("z_shift", 0.34f);
+            headShaderProgram.setFloat("entityColorR", renderEntity.getColorR());
+            headShaderProgram.setFloat("entityColorG", renderEntity.getColorG());
+            headShaderProgram.setFloat("entityColorB", renderEntity.getColorB());
             return armsShaderProgram;
         }
     };
@@ -271,6 +317,9 @@ public class ExperimentalRenderer {
             armsShaderProgram.setFloat("limb_speed", player.limbAnimator.getSpeed());
             armsShaderProgram.setFloat("_globalK", globalK);
             armsShaderProgram.setFloat("z_shift", -0.34f);
+            headShaderProgram.setFloat("entityColorR", renderEntity.getColorR());
+            headShaderProgram.setFloat("entityColorG", renderEntity.getColorG());
+            headShaderProgram.setFloat("entityColorB", renderEntity.getColorB());
             return armsShaderProgram;
         }
     };

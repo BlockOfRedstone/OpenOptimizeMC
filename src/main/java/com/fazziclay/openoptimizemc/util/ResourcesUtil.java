@@ -6,11 +6,15 @@ import java.nio.charset.StandardCharsets;
 
 public class ResourcesUtil {
     public static String getText(String path) {
-        InputStream is = ResourcesUtil.class.getClassLoader().getResourceAsStream(path);
+        final InputStream is = getInputStream(path);
         try {
             return new String(is.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException("Exception in ResourcesUtil.getText.", e);
         }
+    }
+
+    public static InputStream getInputStream(String path) {
+        return ResourcesUtil.class.getClassLoader().getResourceAsStream(path);
     }
 }

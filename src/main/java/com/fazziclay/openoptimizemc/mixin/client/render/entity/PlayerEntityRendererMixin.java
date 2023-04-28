@@ -39,8 +39,9 @@ public abstract class PlayerEntityRendererMixin<M> extends LivingEntityRenderer<
             return;
         }
         OP.push(OP_OPENOPTIMIZEMC_MIXIN);
-        if (behaviorManager.getBehavior().cubePrimitivePlayers(abstractClientPlayerEntity)) { // TODO: WARINIG!!!!!!!!!!!!!!!!!!!
+        if (behaviorManager.getBehavior().renderEntityArmor(abstractClientPlayerEntity)) { // TODO: WARINIG!!!!!!!!!!!!!!!!!!!
             renderDirtRenderer(abstractClientPlayerEntity, matrixStack, vertexConsumerProvider, light);
+            //renderCubePrimitivePlayer(abstractClientPlayerEntity, matrixStack, vertexConsumerProvider, light);
             OP.pop();
             ci.cancel();
             return;
@@ -87,7 +88,6 @@ public abstract class PlayerEntityRendererMixin<M> extends LivingEntityRenderer<
         float g = easterEgg ? 1.0f : RANDOM.nextFloat();
         float b = easterEgg ? 0.0f : RANDOM.nextFloat();
         float a = 1f;
-
         matrices.push();
         MatrixStack matrix = RenderSystem.getModelViewStack();
         matrix.push();

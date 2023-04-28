@@ -32,8 +32,9 @@ dependencies {
 	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
 
 	modImplementation("com.terraformersmc:modmenu:6.2.1")
-	implementation files("libs/DirtRenderer-alpha.jar")
+	implementation files("libs/DirtRenderer-alpha2.jar")
 	implementation files("libs/JavaNeoUtil-1.1.jar")
+	implementation files("libs/obj-0.4.0.jar")
 }
 
 base {

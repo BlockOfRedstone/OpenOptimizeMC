@@ -1,6 +1,8 @@
 package com.fazziclay.openoptimizemc.config;
 
 import com.fazziclay.openoptimizemc.OpenOptimizeMc;
+import com.fazziclay.openoptimizemc.Version;
+import com.fazziclay.openoptimizemc.experemental.ExperimentalRenderer;
 import com.fazziclay.openoptimizemc.util.UpdateChecker;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ConfirmLinkScreen;
@@ -70,6 +72,10 @@ public class ConfigScreen extends Screen {
 
         addButton(10, height - 30, 100, 20, "feature.advancedDebugProfiler.button", config::isAdvancedProfiler, config::toggleAdvancedProfiler, "feature.advancedDebugProfiler.tooltip");
         addButton(120, height - 30, 100, 20, "feature.openoptimizemc.automatic.button", config::isAIBehavior, config::toggleAIBehavior, "feature.openoptimizemc.automatic.tooltip");
+        if (OpenOptimizeMc.debug(true)) addButton(230, height - 30, 100, 20, "RELOAD", () -> false, () -> {
+            ExperimentalRenderer.INSTANCE.init();
+            return false;
+        }, "DEBUG BUTTON.");
 
 
         update = ButtonWidget.builder(Text.translatable("openoptimizemc.updateAvailable.button"), button -> {
