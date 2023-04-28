@@ -2,6 +2,7 @@ package com.fazziclay.openoptimizemc.behavior;
 
 import com.fazziclay.openoptimizemc.OpenOptimizeMc;
 import com.fazziclay.openoptimizemc.config.Config;
+import com.fazziclay.openoptimizemc.config.RendererType;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
@@ -122,6 +123,14 @@ public class ConfigBehavior implements Behavior {
         if (config.isNotApplyFeaturesForSelfPlayer() && OpenOptimizeMc.isSelfPlayer(player)) {
             return false;
         }
-        return config.isPlayersPrimitive();
+        return config.getRenderer() == RendererType.PRIMITIVE_CUBE;
+    }
+
+    @Override
+    public boolean dirtRenderer(Entity entity) {
+        if (config.isNotApplyFeaturesForSelfPlayer() && OpenOptimizeMc.isSelfPlayer(entity)) {
+            return false;
+        }
+        return config.getRenderer() == RendererType.DIRT_RENDERER;
     }
 }

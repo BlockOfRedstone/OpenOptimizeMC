@@ -43,8 +43,8 @@ public class Config {
     @SerializedName("cacheItemStackEnchantments")
 
     private boolean isCacheItemStackEnchantments = true;
-    @SerializedName("playersPrimitive")
-    private boolean isPlayersPrimitive = false;
+    @SerializedName("rendererType")
+    private RendererType rendererType = RendererType.VANILLA;
     @SerializedName("AIBehavior")
     private boolean isAIBehavior = true;
     @SerializedName("updateChunks")
@@ -253,19 +253,19 @@ public class Config {
         return isCacheItemStackEnchantments;
     }
 
-    public boolean isPlayersPrimitive() {
-        return isPlayersPrimitive;
+    public RendererType getRenderer() {
+        return rendererType;
     }
 
-    public void setPlayersPrimitive(boolean playersPrimitive) {
-        isPlayersPrimitive = playersPrimitive;
+    public void setRenderer(RendererType type) {
+        this.rendererType = type;
         save();
     }
 
-    public boolean togglePlayersPrimitive() {
-        isPlayersPrimitive = !isPlayersPrimitive;
+    public RendererType toggleRenderer() {
+        rendererType = rendererType.next();
         save();
-        return isPlayersPrimitive;
+        return rendererType;
     }
 
     public boolean isAIBehavior() {

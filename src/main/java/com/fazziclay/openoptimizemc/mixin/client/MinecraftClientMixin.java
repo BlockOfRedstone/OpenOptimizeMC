@@ -1,18 +1,20 @@
 package com.fazziclay.openoptimizemc.mixin.client;
 
-import com.fazziclay.openoptimizemc.util.m.FpsContainer;
+import com.fazziclay.openoptimizemc.util.OP;
 import com.fazziclay.openoptimizemc.util.UpdateChecker;
+import com.fazziclay.openoptimizemc.util.m.FpsContainer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import com.fazziclay.openoptimizemc.util.OP;
 
 @Mixin(MinecraftClient.class)
 public class MinecraftClientMixin implements FpsContainer {
@@ -28,11 +30,13 @@ public class MinecraftClientMixin implements FpsContainer {
         if (UpdateChecker.isUpdateAvailable()) {
             new Thread(() -> {
                 try {
-                    Thread.sleep(6*1000);
+                    Thread.sleep(2*1000);
                 } catch (InterruptedException ignore) {}
                 ClientPlayerEntity player = MinecraftClient.getInstance().player;
                 if (player != null) {
-                    player.sendMessage(Text.translatable("openoptimizemc.updateAvailable.chat"));
+                    String url = UpdateChecker.getUpdateURL();
+                    MutableText text = Text.literal(url).formatted(Formatting.UNDERLINE).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url)));
+                    player.sendMessage(Text.translatable("openoptimizemc.updateAvailable.chat", text));
                 }
             }).start();
         }

@@ -25,8 +25,8 @@ public class BehaviorManager {
             case AI_AUTOMATIC -> behavior = aiBehavior;
             case CONFIG_DIRECTLY -> behavior = configBehavior;
         }
-        Debug.setAiFps(-1);
-        Debug.setRealFps(-1);
+        Debug.setAiFps(0);
+        Debug.setRealFps(0);
         Debug.setAiState("-");
     }
 

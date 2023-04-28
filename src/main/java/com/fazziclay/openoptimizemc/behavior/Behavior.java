@@ -21,6 +21,7 @@ public interface Behavior {
     boolean renderPlayersCapes(AbstractClientPlayerEntity pla);
 
     boolean cubePrimitivePlayers(AbstractClientPlayerEntity player);
+    boolean dirtRenderer(Entity entity);
 
     boolean renderEntityHeldItem(LivingEntity entity);
 

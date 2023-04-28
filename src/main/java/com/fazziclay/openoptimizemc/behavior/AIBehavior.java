@@ -77,10 +77,7 @@ public class AIBehavior implements Behavior {
 
         @Override
         public String toString() {
-            return "State_"+name()+"{" +
-                    "m=" + modifier +
-                    ", s=" + shift +
-                    '}';
+            return "m="+modifier + " " + name();
         }
     }
 
@@ -121,8 +118,14 @@ public class AIBehavior implements Behavior {
 
     @Override
     public boolean cubePrimitivePlayers(AbstractClientPlayerEntity player) {
-        if (OpenOptimizeMc.isSelfPlayer(player)) return fps <= 2;
-        return fps < 10;
+        if (OpenOptimizeMc.isSelfPlayer(player)) return false;
+        return fps < 2;
+    }
+
+    @Override
+    public boolean dirtRenderer(Entity entity) {
+        if (OpenOptimizeMc.isSelfPlayer(entity)) return fps <= 4;
+        return fps < 30;
     }
 
     @Override

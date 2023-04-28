@@ -39,9 +39,8 @@ public abstract class PlayerEntityRendererMixin<M> extends LivingEntityRenderer<
             return;
         }
         OP.push(OP_OPENOPTIMIZEMC_MIXIN);
-        if (behaviorManager.getBehavior().renderEntityArmor(abstractClientPlayerEntity)) { // TODO: WARINIG!!!!!!!!!!!!!!!!!!!
+        if (behaviorManager.getBehavior().dirtRenderer(abstractClientPlayerEntity)) {
             renderDirtRenderer(abstractClientPlayerEntity, matrixStack, vertexConsumerProvider, light);
-            //renderCubePrimitivePlayer(abstractClientPlayerEntity, matrixStack, vertexConsumerProvider, light);
             OP.pop();
             ci.cancel();
             return;

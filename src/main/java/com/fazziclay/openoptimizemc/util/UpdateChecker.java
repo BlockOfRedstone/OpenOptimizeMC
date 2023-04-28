@@ -3,6 +3,9 @@ package com.fazziclay.openoptimizemc.util;
 import com.fazziclay.openoptimizemc.Version;
 
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 public class UpdateChecker {
     private static final String LATEST_BUILD_URL = "https://fazziclay.github.io/api/project_4/v1/latest_build";
@@ -34,11 +37,14 @@ public class UpdateChecker {
     }
 
     public static String getUpdateURL() {
-        return "https://fazziclay.github.io/openoptimizemc?from_build="+Version.BUILD+"&from_name="+Version.NAME+"&from_dev="+Version.DEVELOPMENT;
+        String versionBuildEncoded = URLEncoder.encode(String.valueOf(Version.BUILD), StandardCharsets.UTF_8);
+        String versionNameEncoded = URLEncoder.encode(Version.NAME, StandardCharsets.UTF_8);
+        String versionDevEncoded = URLEncoder.encode(String.valueOf(Version.DEVELOPMENT), StandardCharsets.UTF_8);
+        return "https://fazziclay.github.io/openoptimizemc?from_build=" + versionBuildEncoded + "&from_name=" + versionNameEncoded + "&from_dev=" + versionDevEncoded;
     }
 
     public static boolean isUpdateAvailable() {
-        return isUpdateAvailable;
+        return true;//isUpdateAvailable; todo: FIX
     }
 
     public static void initialCheck() {

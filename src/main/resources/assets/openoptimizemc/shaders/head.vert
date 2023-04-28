@@ -17,7 +17,7 @@ void main() {
     color.r *= entityColorR;
     color.g *= entityColorG;
     color.b *= 2;//entityColorB;
-    //float shift = texture_pos.x;
-    //color *= shift;
+    float shift = texture_pos.x;
+    color *= shift;
     gl_Position = projection_matrix * view_matrix * model_matrix * vec4(vertex_position, 1.0); // должно быть нормированным (-1 ; 1)
 }

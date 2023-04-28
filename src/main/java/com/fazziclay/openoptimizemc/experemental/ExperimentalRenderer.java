@@ -7,17 +7,13 @@ import com.fazziclay.openoptimizemc.util.OP;
 import com.fazziclay.openoptimizemc.util.ResourcesUtil;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
-import de.javagl.obj.Obj;
-import de.javagl.obj.ObjData;
-import de.javagl.obj.ObjReader;
-import de.javagl.obj.ObjUtils;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.BufferRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import org.joml.Matrix4f;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -25,9 +21,13 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class ExperimentalRenderer {
+    private static final String SHADER_KEY_VIEWMATRIX = "view_matrix";
+    private static final String SHADER_KEY_PROJECTIONMATRIX = "projection_matrix";
+    private static final String SHADERS_PATH_FORMAT = "assets/openoptimizemc/shaders/%s";
 
     public static final ExperimentalRenderer INSTANCE = new ExperimentalRenderer();
-    private static float[] positions_colors2 = {
+    private static final float[] VBO_DATA = {
+            // VERTEX COORDS            COLOR            color_shift?? TODO: what is this?
             // FRONT
             -0.5f, -0.5f, -0.5f,    1.f,  1.f,  1.f,     0.5f, 0.f,              // 0
             -0.5f,  0.5f, -0.5f,    1.f,  1.f,  1.f,     0.5f, 0.f,              // 1
@@ -66,7 +66,7 @@ public class ExperimentalRenderer {
     };
 
 
-    private static int[] indices = {
+    private static final int[] INDEXES = {
             0,   1,  2,  2,  3,  0, // front
             4,   5,  6,  6,  7,  4, // back
             8,   9, 10, 10, 11,  8, // right
@@ -77,54 +77,48 @@ public class ExperimentalRenderer {
 
     private boolean initialized = false;
     private VAO vao;
-    private VAO chunchVao;
     private IndexBuffer indexBuffer;
-    private ShaderProgram headShaderProgram;
-    private ShaderProgram bodyShaderProgram;
-    private ShaderProgram armsShaderProgram;
-    private ShaderProgram legsShaderProgram;
+    private ShaderProgram shaderProgram;
     private final HashMap<Entity, RenderEntity> entityList = new HashMap<>();
 
     private float globalK;
     private long lastCleanup = 0;
 
+    private long debugShadersBinds = 0;
+    private long debugShadersUnBinds = 0;
+    private long debugGlDrawElementArrays = 0;
+    private long debugSetModelMatrix = 0;
+    private long debugTimeToRenderMs = 0;
+
+
+    public void beforeEntities(WorldRenderContext context) {
+        debugShadersBinds = 0;
+        debugShadersUnBinds = 0;
+        debugGlDrawElementArrays = 0;
+        debugSetModelMatrix = 0;
+        debugTimeToRenderMs = 0;
+    }
+
+    public void afterEntities(WorldRenderContext context) {
+        Debug.setExperimentalStatString(String.format("b=%s unb=%s draws=%s setViewMat=%s time=%sms", debugShadersBinds, debugShadersUnBinds, debugGlDrawElementArrays, debugSetModelMatrix, debugTimeToRenderMs));
+    }
+
     public void init() {
-        if (initialized) {
-            OpenOptimizeMc.LOGGER.info("WARNING! Double init called!!");
-            headShaderProgram = program("head");
+        if (initialized && OpenOptimizeMc.debug(true)) {
+            shaderProgram = program("head");
             return;
         }
+        OpenOptimizeMc.LOGGER.info("ExperimentalRenderer init...");
+        if (initialized) OpenOptimizeMc.LOGGER.info("WARNING! Double init called!!");
         initialized = true;
-        OP.push("ExperimentalRenderer:init");
-        OpenOptimizeMc.LOGGER.info("Experimental initialized!");
 
-        headShaderProgram = program("head");
-        bodyShaderProgram = program("body");
-        armsShaderProgram = program("arms");
-        legsShaderProgram = program("legs");
-
-        Obj obj;
-        try {
-            obj = ObjUtils.convertToRenderable(ObjReader.read(ResourcesUtil.getInputStream("assets/openoptimizemc/obj/base_human.obj")));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        //positions_colors2 = ObjData.getVerticesArray(obj);
-        //indices = ObjData.getFaceVertexIndicesArray(obj);
-
-        indexBuffer = new IndexBuffer(indices);
-        VBO cube_vbo = new VBO(positions_colors2, BufferLayout.create(BufferLayout.ShaderDataType.FLOAT3)); // , BufferLayout.ShaderDataType.FLOAT3, BufferLayout.ShaderDataType.FLOAT2
+        shaderProgram = program("head");
         vao = new VAO();
-        vao.addVertexBuffer(cube_vbo);
+        indexBuffer = new IndexBuffer(INDEXES);
+        vao.addVertexBuffer(new VBO(VBO_DATA, BufferLayout.create(BufferLayout.ShaderDataType.FLOAT3, BufferLayout.ShaderDataType.FLOAT3, BufferLayout.ShaderDataType.FLOAT2)));
         vao.setIndexBuffer(indexBuffer);
 
-        chunchVao = new VAO();
-
-        if (!OpenOptimizeMc.debug(true)) {
-            indices = null;
-            positions_colors2 = null;
-        }
-        OP.pop();
+        OpenOptimizeMc.LOGGER.info("ExperimentalRenderer initialized!");
     }
 
     public void unload(Entity entity) {
@@ -139,191 +133,155 @@ public class ExperimentalRenderer {
                 entityList.clear();
             }
         }
-        entityList.put(entity, new RenderEntity(entity));
+        if (!entityList.containsKey(entity)) entityList.put(entity, new RenderEntity(entity));
         Debug.setExperimentalRendererEntityListCount(entityList.size());
 
-        globalK = (float) (((double)System.currentTimeMillis() % 10000L) / 10L);
+        globalK = (float) ((double)System.currentTimeMillis() % 1000L);
         Debug.setExperimentalRendererGlobalK(globalK);
-        if (!initialized) {
-            init();
-            initialized = true;
-        }
+        if (!initialized) init();
     }
 
     public void render(AbstractClientPlayerEntity player, MatrixStack matrices) {
+        long startRender = System.currentTimeMillis();
+        if (player.isInvisible()) return;
         OP.push("ExperimentalRenderer:render");
 
-        OP.push("check init");
-        if (!initialized) {
-            init();
-            initialized = true;
-        }
-
-        OP.swap("findings");
-        RenderEntity renderEntity = entityList.get(player);
-        if (renderEntity == null) {
-            renderEntity = new RenderEntity(player);
-            entityList.put(player, renderEntity);
-        }
-
-        OP.swap("Misc");
-        renderEntity.renderTick(player);
-        if (player.isInvisible()) return;
+        if (!initialized) init();
         RenderSystem.enableDepthTest();
         RenderSystem.disableCull();
 
+        RenderEntity renderEntity = entityList.computeIfAbsent(player, RenderEntity::new);
+        renderEntity.renderTick(player);
 
-        OP.swap("vao bind");
+        OP.push("Bind VBO, IDO and ShaderProgram");
         vao.bind();
-        OP.swap("indexBuffer bind");
         indexBuffer.bind();
+        shaderProgram.bind();
+        debugShadersBinds++;
+        OP.pop();
 
-        OP.swap("viewMatrix mul(*)");
+
         Matrix4f viewMatrix = new Matrix4f(matrices.peek().getPositionMatrix()).mul(RenderSystem.getModelViewMatrix());
+        shaderProgram.setMat4f(SHADER_KEY_VIEWMATRIX, viewMatrix);
 
-        OP.swap("RenderSystem.getProjectionMatrix");
         Matrix4f projectionMatrix = RenderSystem.getProjectionMatrix();
+        shaderProgram.setMat4f(SHADER_KEY_PROJECTIONMATRIX, projectionMatrix);
 
-        OP.swap("for cycle");
+        OP.push("PARTS");
         for (DirtCuboid part : PARTS) { // TODO: 4/28/23 fix
-            OP.push("Part " + part.name);
             if (player.isSpectator() && part != HEAD) return;
-
-            OP.push("getShaderProgram");
-            ShaderProgram currentShaderProgram = part.getShaderProgram(player, renderEntity);
-            OP.swap("set ShaderProgram mat4");
-            currentShaderProgram.setMat4f("view_matrix", viewMatrix);
-            currentShaderProgram.setMat4f("projection_matrix", projectionMatrix);
-            OP.pop();
-
-            OP.swap("Part " + part.name + " glDrawElements");
+            OP.push("Part " + part.name);
+            part.getShaderProgram(player, renderEntity);
             glDrawElements(GL_TRIANGLES, indexBuffer.getCount(), GL_UNSIGNED_INT, NULL);
+            debugGlDrawElementArrays++;
             OP.pop();
         }
-        OP.swap("unbinds");
+        OP.pop();
 
-
-        BufferRenderer.reset(); //VAO.unbind() functional in minecraft-system
+        OP.push("RESET & UNBIND");
+        BufferRenderer.reset(); // VAO.unbind() functionality in the minecraft system
         IndexBuffer.unbind();
         ShaderProgram.unbind();
+        debugShadersUnBinds++;
+        OP.pop();
 
-        OP.swap("Crunch vbo bind");
-        //chunchVao.bind();
-        //GameRenderer.getPositionColorProgram().bind();
         OP.pop();
-        OP.pop();
+        debugTimeToRenderMs += (System.currentTimeMillis() - startRender);
     }
 
     private void setModelMatrix(ShaderProgram program, Matrix4f mat) {
-        //mat.scale(0.05f);
-        //mat.translate(0, -0.6f, 0);
-        //mat.rotateY((float) Math.PI);
-        //mat.scale(0.125f);
-        //mat.scale(1, 0.4f, 1);
         program.setMat4f("model_matrix", mat);
+        debugSetModelMatrix++;
     }
 
 
     private ShaderProgram program(String name) {
         OpenOptimizeMc.LOGGER.info("ShaderProgram '"+name+"' created!");
-        ShaderProgram shaderProgram = new ShaderProgram(ResourcesUtil.getText("assets/openoptimizemc/shaders/"+name+".vert"), ResourcesUtil.getText("assets/openoptimizemc/shaders/"+name+".frag"));
+        ShaderProgram shaderProgram = new ShaderProgram(ResourcesUtil.getText(SHADERS_PATH_FORMAT.formatted(name + ".vert")), ResourcesUtil.getText(SHADERS_PATH_FORMAT.formatted(name + ".frag")));
         if (!shaderProgram.isCompile()) {
-            OpenOptimizeMc.LOGGER.info("Experimental shader name='"+name+"' not compiled!\nShader log:\n" + shaderProgram.getCompileLog());
+            OpenOptimizeMc.LOGGER.info("ExperimentalRenderer shader name='"+name+"' not compiled!\nShader log:\n" + shaderProgram.getCompileLog());
         }
         return shaderProgram;
     }
 
     private final DirtCuboid HEAD = new DirtCuboid("head") { // HEAD
         @Override
-        public ShaderProgram getShaderProgram(AbstractClientPlayerEntity player, RenderEntity renderEntity) {
-            headShaderProgram.bind();
-            setModelMatrix(headShaderProgram, renderEntity.getHeadModelMatrix());
-            headShaderProgram.setFloat("yaw", player.getYaw());
-            headShaderProgram.setFloat("pitch", player.getPitch());
-            headShaderProgram.setFloat("entityColorR", renderEntity.getColorR());
-            headShaderProgram.setFloat("entityColorG", renderEntity.getColorG());
-            headShaderProgram.setFloat("entityColorB", renderEntity.getColorB());
-            return headShaderProgram;
+        public void getShaderProgram(AbstractClientPlayerEntity player, RenderEntity renderEntity) {
+            setModelMatrix(shaderProgram, renderEntity.getHeadModelMatrix());
+            //shaderProgram.setFloat("yaw", player.getYaw());
+            //shaderProgram.setFloat("pitch", player.getPitch());
+            shaderProgram.setFloat("entityColorR", renderEntity.getColorR());
+            shaderProgram.setFloat("entityColorG", renderEntity.getColorG());
+            shaderProgram.setFloat("entityColorB", renderEntity.getColorB());
         }
     };
 
     private final DirtCuboid BODY = new DirtCuboid("body") { // BODY
         @Override
-        public ShaderProgram getShaderProgram(AbstractClientPlayerEntity player, RenderEntity renderEntity) {
-            bodyShaderProgram.bind();
-            setModelMatrix(bodyShaderProgram, renderEntity.getBodyModelMatrix());
-            bodyShaderProgram.setFloat("bodyYaw", player.bodyYaw);
-            headShaderProgram.setFloat("entityColorR", renderEntity.getColorR());
-            headShaderProgram.setFloat("entityColorG", renderEntity.getColorG());
-            headShaderProgram.setFloat("entityColorB", renderEntity.getColorB());
-            return bodyShaderProgram;
+        public void getShaderProgram(AbstractClientPlayerEntity player, RenderEntity renderEntity) {
+            setModelMatrix(shaderProgram, renderEntity.getBodyModelMatrix());
+            //shaderProgram.setFloat("bodyYaw", player.bodyYaw);
+            shaderProgram.setFloat("entityColorR", renderEntity.getColorR());
+            shaderProgram.setFloat("entityColorG", renderEntity.getColorG());
+            shaderProgram.setFloat("entityColorB", renderEntity.getColorB());
         }
     };
 
     private final DirtCuboid LEG_LEFT = new DirtCuboid("left_leg") { // LEFT LEG
         @Override
-        public ShaderProgram getShaderProgram(AbstractClientPlayerEntity player, RenderEntity renderEntity) {
-            legsShaderProgram.bind();
-            setModelMatrix(legsShaderProgram, renderEntity.getLeftLegModelMatrix());
-            legsShaderProgram.setFloat("limb_pos", player.limbAnimator.getPos());
-            legsShaderProgram.setFloat("limb_speed", player.limbAnimator.getSpeed());
-            legsShaderProgram.setFloat("_globalK", globalK);
-            legsShaderProgram.setFloat("z_shift", 0.14f);
-            headShaderProgram.setFloat("entityColorR", renderEntity.getColorR());
-            headShaderProgram.setFloat("entityColorG", renderEntity.getColorG());
-            headShaderProgram.setFloat("entityColorB", renderEntity.getColorB());
-            return legsShaderProgram;
+        public void getShaderProgram(AbstractClientPlayerEntity player, RenderEntity renderEntity) {
+            setModelMatrix(shaderProgram, renderEntity.getLeftLegModelMatrix());
+            //shaderProgram.setFloat("limb_pos", player.limbAnimator.getPos());
+            //shaderProgram.setFloat("limb_speed", player.limbAnimator.getSpeed());
+            //shaderProgram.setFloat("_globalK", globalK);
+            //shaderProgram.setFloat("z_shift", 0.14f);
+            shaderProgram.setFloat("entityColorR", renderEntity.getColorR());
+            shaderProgram.setFloat("entityColorG", renderEntity.getColorG());
+            shaderProgram.setFloat("entityColorB", renderEntity.getColorB());
         }
     };
 
     private final DirtCuboid LEG_RIGHT = new DirtCuboid("right_leg") { // RIGHT LEG
         @Override
-        public ShaderProgram getShaderProgram(AbstractClientPlayerEntity player, RenderEntity renderEntity) {
-            legsShaderProgram.bind();
-            setModelMatrix(legsShaderProgram, renderEntity.getRightLegModelMatrix());
-            legsShaderProgram.setFloat("limb_pos", player.limbAnimator.getPos());
-            legsShaderProgram.setFloat("limb_speed", player.limbAnimator.getSpeed());
-            legsShaderProgram.setFloat("_globalK", globalK);
-            legsShaderProgram.setFloat("z_shift", -0.14f);
-            headShaderProgram.setFloat("entityColorR", renderEntity.getColorR());
-            headShaderProgram.setFloat("entityColorG", renderEntity.getColorG());
-            headShaderProgram.setFloat("entityColorB", renderEntity.getColorB());
-            return legsShaderProgram;
+        public void getShaderProgram(AbstractClientPlayerEntity player, RenderEntity renderEntity) {
+            setModelMatrix(shaderProgram, renderEntity.getRightLegModelMatrix());
+            //shaderProgram.setFloat("limb_pos", player.limbAnimator.getPos());
+            //shaderProgram.setFloat("limb_speed", player.limbAnimator.getSpeed());
+            //shaderProgram.setFloat("_globalK", globalK);
+            //shaderProgram.setFloat("z_shift", -0.14f);
+            shaderProgram.setFloat("entityColorR", renderEntity.getColorR());
+            shaderProgram.setFloat("entityColorG", renderEntity.getColorG());
+            shaderProgram.setFloat("entityColorB", renderEntity.getColorB());
         }
     };
 
     private final DirtCuboid ARM_LEFT = new DirtCuboid("left_arm") { // LEFT ARM
         @Override
-        public ShaderProgram getShaderProgram(AbstractClientPlayerEntity player, RenderEntity renderEntity) {
-            armsShaderProgram.bind();
-            setModelMatrix(armsShaderProgram, renderEntity.getLeftArmModelMatrix());
-            armsShaderProgram.setFloat("limb_pos", player.limbAnimator.getPos());
-            armsShaderProgram.setFloat("limb_speed", player.limbAnimator.getSpeed());
-            armsShaderProgram.setFloat("_globalK", globalK);
-            armsShaderProgram.setFloat("z_shift", 0.34f);
-            headShaderProgram.setFloat("entityColorR", renderEntity.getColorR());
-            headShaderProgram.setFloat("entityColorG", renderEntity.getColorG());
-            headShaderProgram.setFloat("entityColorB", renderEntity.getColorB());
-            return armsShaderProgram;
+        public void getShaderProgram(AbstractClientPlayerEntity player, RenderEntity renderEntity) {
+            setModelMatrix(shaderProgram, renderEntity.getLeftArmModelMatrix());
+            //shaderProgram.setFloat("limb_pos", player.limbAnimator.getPos());
+            //shaderProgram.setFloat("limb_speed", player.limbAnimator.getSpeed());
+            //shaderProgram.setFloat("_globalK", globalK);
+            //shaderProgram.setFloat("z_shift", 0.34f);
+            shaderProgram.setFloat("entityColorR", renderEntity.getColorR());
+            shaderProgram.setFloat("entityColorG", renderEntity.getColorG());
+            shaderProgram.setFloat("entityColorB", renderEntity.getColorB());
         }
     };
 
     private final DirtCuboid ARM_RIGHT = new DirtCuboid("right_arm") { // RIGHT ARM
         @Override
-        public ShaderProgram getShaderProgram(AbstractClientPlayerEntity player, RenderEntity renderEntity) {
-            armsShaderProgram.bind();
-            setModelMatrix(armsShaderProgram, renderEntity.getRightArmModelMatrix());
-            armsShaderProgram.setFloat("limb_pos", player.limbAnimator.getPos());
-            armsShaderProgram.setFloat("limb_speed", player.limbAnimator.getSpeed());
-            armsShaderProgram.setFloat("_globalK", globalK);
-            armsShaderProgram.setFloat("z_shift", -0.34f);
-            headShaderProgram.setFloat("entityColorR", renderEntity.getColorR());
-            headShaderProgram.setFloat("entityColorG", renderEntity.getColorG());
-            headShaderProgram.setFloat("entityColorB", renderEntity.getColorB());
-            return armsShaderProgram;
+        public void getShaderProgram(AbstractClientPlayerEntity player, RenderEntity renderEntity) {
+            setModelMatrix(shaderProgram, renderEntity.getRightArmModelMatrix());
+            //shaderProgram.setFloat("limb_pos", player.limbAnimator.getPos());
+            //shaderProgram.setFloat("limb_speed", player.limbAnimator.getSpeed());
+            //shaderProgram.setFloat("_globalK", globalK);
+            //shaderProgram.setFloat("z_shift", -0.34f);
+            shaderProgram.setFloat("entityColorR", renderEntity.getColorR());
+            shaderProgram.setFloat("entityColorG", renderEntity.getColorG());
+            shaderProgram.setFloat("entityColorB", renderEntity.getColorB());
         }
     };
-
     private final List<DirtCuboid> PARTS = ImmutableList.of(HEAD, BODY, ARM_LEFT, ARM_RIGHT, LEG_LEFT, LEG_RIGHT);
 
     private abstract static class DirtCuboid {
@@ -333,6 +291,6 @@ public class ExperimentalRenderer {
             this.name = name;
         }
 
-        public abstract ShaderProgram getShaderProgram(AbstractClientPlayerEntity player, RenderEntity renderEntity);
+        public abstract void getShaderProgram(AbstractClientPlayerEntity player, RenderEntity renderEntity);
     }
 }
