@@ -26,7 +26,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 public class DirtRenderer {
     private static final String SHADER_KEY_VIEWMATRIX = "view_matrix";
     private static final String SHADER_KEY_PROJECTIONMATRIX = "projection_matrix";
-    private static final String SHADERS_PATH_FORMAT = "assets/openoptimizemc/shaders/%s";
+    private static final String SHADERS_PATH_FORMAT = "assets/openoptimizemc/dirtrenderer/shaders/%s";
 
     public static final DirtRenderer INSTANCE = new DirtRenderer();
     private static final float[] VBO_DATA = {
@@ -102,7 +102,7 @@ public class DirtRenderer {
         initialized = true;
 
         openglMCWrapper("init()", () -> {
-            shaderProgram = program("head"); // rename to main
+            shaderProgram = program("main"); // rename to main
             vao = new VAO();
             indexBuffer = new IndexBuffer(INDEXES);
             vao.addVertexBuffer(new VBO(VBO_DATA, BufferLayout.create(BufferLayout.ShaderDataType.FLOAT3, BufferLayout.ShaderDataType.FLOAT3, BufferLayout.ShaderDataType.FLOAT2)));

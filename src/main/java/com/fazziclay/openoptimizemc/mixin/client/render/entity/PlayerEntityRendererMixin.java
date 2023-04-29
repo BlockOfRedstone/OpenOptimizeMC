@@ -41,8 +41,6 @@ public abstract class PlayerEntityRendererMixin<M> extends LivingEntityRenderer<
         OP.push(OP_OPENOPTIMIZEMC_MIXIN);
         if (behaviorManager.getBehavior().dirtRenderer(abstractClientPlayerEntity)) {
             renderDirtRenderer(abstractClientPlayerEntity, matrixStack, vertexConsumerProvider, light);
-            //renderCubePrimitivePlayer(abstractClientPlayerEntity, matrixStack, vertexConsumerProvider, light);
-
             OP.pop();
             ci.cancel();
             return;
@@ -77,18 +75,19 @@ public abstract class PlayerEntityRendererMixin<M> extends LivingEntityRenderer<
     public Random RANDOM = new Random();
     private void renderCubePrimitivePlayer(AbstractClientPlayerEntity player, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, int light) {
         boolean easterEgg = "FazziCLAY".equals(player.getEntityName());
-        RANDOM.setSeed(player.hashCode());
+        RANDOM.setSeed(player.getEntityName().hashCode());
         float f = 0.75f;
         double x1 = f * -0.5;
         double y1 = f * -0.5;
         double z1 = f * -0.5;
         double x2 = f * 0.5;
         double y2 = f * 0.5;
-        double z2 = f * 0.5 + (easterEgg ? 0 : (RANDOM.nextFloat() / 2f));
+        double z2 = f * 0.5;
         float r = easterEgg ? 0.0f : RANDOM.nextFloat();
         float g = easterEgg ? 1.0f : RANDOM.nextFloat();
         float b = easterEgg ? 0.0f : RANDOM.nextFloat();
         float a = 1f;
+        z2 += (easterEgg ? 0 : (RANDOM.nextFloat() / 2f));
         matrices.push();
         MatrixStack matrix = RenderSystem.getModelViewStack();
         matrix.push();

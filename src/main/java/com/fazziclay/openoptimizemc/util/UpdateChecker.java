@@ -44,7 +44,7 @@ public class UpdateChecker {
     }
 
     public static boolean isUpdateAvailable() {
-        return true;//isUpdateAvailable; todo: FIX
+        return isUpdateAvailable;
     }
 
     public static void initialCheck() {
