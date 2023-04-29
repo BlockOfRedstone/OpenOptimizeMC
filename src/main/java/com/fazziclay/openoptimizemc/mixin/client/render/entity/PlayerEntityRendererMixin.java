@@ -2,7 +2,7 @@ package com.fazziclay.openoptimizemc.mixin.client.render.entity;
 
 import com.fazziclay.openoptimizemc.OpenOptimizeMc;
 import com.fazziclay.openoptimizemc.behavior.BehaviorManager;
-import com.fazziclay.openoptimizemc.experemental.ExperimentalRenderer;
+import com.fazziclay.openoptimizemc.experemental.DirtRenderer;
 import com.fazziclay.openoptimizemc.util.MathConst;
 import com.fazziclay.openoptimizemc.util.OP;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -25,7 +25,7 @@ import java.util.Random;
 public abstract class PlayerEntityRendererMixin<M> extends LivingEntityRenderer<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>> {
     private static final String OP_OPENOPTIMIZEMC_MIXIN = "OpenOptimizeMC mixin";
     private static final BehaviorManager behaviorManager = OpenOptimizeMc.getBehaviorManager();
-    private static final ExperimentalRenderer experimentalRenderer = ExperimentalRenderer.INSTANCE;
+    private static final DirtRenderer DIRT_RENDERER = DirtRenderer.INSTANCE;
 
 
     public PlayerEntityRendererMixin(EntityRendererFactory.Context ctx, PlayerEntityModel<AbstractClientPlayerEntity> model, float shadowRadius) {
@@ -41,6 +41,8 @@ public abstract class PlayerEntityRendererMixin<M> extends LivingEntityRenderer<
         OP.push(OP_OPENOPTIMIZEMC_MIXIN);
         if (behaviorManager.getBehavior().dirtRenderer(abstractClientPlayerEntity)) {
             renderDirtRenderer(abstractClientPlayerEntity, matrixStack, vertexConsumerProvider, light);
+            //renderCubePrimitivePlayer(abstractClientPlayerEntity, matrixStack, vertexConsumerProvider, light);
+
             OP.pop();
             ci.cancel();
             return;
@@ -69,7 +71,7 @@ public abstract class PlayerEntityRendererMixin<M> extends LivingEntityRenderer<
     }
 
     private void renderDirtRenderer(AbstractClientPlayerEntity player, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, int light) {
-        experimentalRenderer.render(player, matrices);
+        DIRT_RENDERER.minecraftRenderCall(player, matrices);
     }
 
     public Random RANDOM = new Random();

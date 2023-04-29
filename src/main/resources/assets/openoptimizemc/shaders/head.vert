@@ -6,18 +6,14 @@ layout(location = 2) in vec2 texture_pos;
 uniform mat4 view_matrix;
 uniform mat4 model_matrix;
 uniform mat4 projection_matrix;
-uniform float entityColorR;
-uniform float entityColorG;
-uniform float entityColorB;
+uniform vec3 partColorModifier;
+uniform float _globalK;
 
 out vec3 color;
+out float colorM;
 
 void main() {
-    color = vec3(0.9, 0.9, 0.9);//vertex_color;
-    color.r *= entityColorR;
-    color.g *= entityColorG;
-    color.b *= 2;//entityColorB;
-    float shift = texture_pos.x;
-    color *= shift;
+    color = partColorModifier * vertex_color;
+    colorM = texture_pos.r / cos(vertex_position.x - vertex_position.z);
     gl_Position = projection_matrix * view_matrix * model_matrix * vec4(vertex_position, 1.0); // должно быть нормированным (-1 ; 1)
 }

@@ -1,5 +1,6 @@
 package com.fazziclay.openoptimizemc.mixin.client;
 
+import com.fazziclay.openoptimizemc.OpenOptimizeMc;
 import com.fazziclay.openoptimizemc.util.OP;
 import com.fazziclay.openoptimizemc.util.UpdateChecker;
 import com.fazziclay.openoptimizemc.util.m.FpsContainer;
@@ -27,6 +28,7 @@ public class MinecraftClientMixin implements FpsContainer {
 
     @Inject(at = @At("HEAD"), method = "joinWorld")
     private void joinWorld(ClientWorld world, CallbackInfo ci) {
+        if (!OpenOptimizeMc.getConfig().isUpdateChunks()) OpenOptimizeMc.getConfig().setUpdateChunks(true);
         if (UpdateChecker.isUpdateAvailable()) {
             new Thread(() -> {
                 try {

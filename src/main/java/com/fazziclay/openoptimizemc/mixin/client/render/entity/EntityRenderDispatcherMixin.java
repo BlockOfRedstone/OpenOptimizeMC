@@ -3,7 +3,7 @@ package com.fazziclay.openoptimizemc.mixin.client.render.entity;
 
 import com.fazziclay.openoptimizemc.OpenOptimizeMc;
 import com.fazziclay.openoptimizemc.behavior.BehaviorManager;
-import com.fazziclay.openoptimizemc.experemental.ExperimentalRenderer;
+import com.fazziclay.openoptimizemc.experemental.DirtRenderer;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.entity.Entity;
@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(value = EntityRenderDispatcher.class)
 public abstract class EntityRenderDispatcherMixin {
     private static final BehaviorManager behaviorManager = OpenOptimizeMc.getBehaviorManager();
-    private static final ExperimentalRenderer experimentalRenderer = ExperimentalRenderer.INSTANCE;
+    private static final DirtRenderer DIRT_RENDERER = DirtRenderer.INSTANCE;
 
     @Inject(at = @At("HEAD"), method = "shouldRender", cancellable = true)
     public <E extends Entity> void shouldRender(E entity, Frustum frustum, double x, double y, double z, CallbackInfoReturnable<Boolean> cir) {
@@ -31,17 +31,14 @@ public abstract class EntityRenderDispatcherMixin {
         }
     }
 
-    @Inject(at = @At("RETURN"), method = "shouldRender", cancellable = true)
+    @Inject(at = @At("RETURN"), method = "shouldRender")
     public <E extends Entity> void shouldRender$return(E entity, Frustum frustum, double x, double y, double z, CallbackInfoReturnable<Boolean> cir) {
         if (entity instanceof PlayerEntity) {
-            if (!cir.getReturnValue()) { // if false
-                experimentalRenderer.unload(entity);
+            if (cir.getReturnValue()) {
+                DIRT_RENDERER.load(entity);
             } else {
-                experimentalRenderer.load(entity);
+                DIRT_RENDERER.unload(entity);
             }
-        }
-        if (entity instanceof ArmorStandEntity) {
-            cir.setReturnValue(false);
         }
     }
 }

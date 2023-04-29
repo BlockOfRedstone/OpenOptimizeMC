@@ -19,6 +19,8 @@ public class RenderEntity {
     private final float colorR;
     private final float colorG;
     private final float colorB;
+    private Matrix4f viewMatrix;
+    private boolean readyToRender = false;
 
     public RenderEntity(Entity entity) {
         // TODO: 4/27/23 what,
@@ -53,7 +55,7 @@ public class RenderEntity {
         return entity;
     }
 
-    public void renderTick(AbstractClientPlayerEntity player) {
+    public void renderTick(Entity player) {
 
     }
 
@@ -165,5 +167,26 @@ public class RenderEntity {
         float rightArmPitch = MathHelper.cos(f * 0.6662f + (float)Math.PI) * 2.0f * g * 0.5f / k;
         mmm.rotateZ((float) (rightArmPitch * Math.PI));
         return mmm;
+    }
+
+    public void setViewMatrix(Matrix4f viewMatrix) {
+        this.viewMatrix = viewMatrix;
+        this.readyToRender = true;
+    }
+
+    public Matrix4f getViewMatrix() {
+        if (viewMatrix == null) {
+            viewMatrix = new Matrix4f();
+            viewMatrix.scale(0.25f);
+        }
+        if (isModCreator) {
+            viewMatrix.translate(0, 0.25f, 0);
+            viewMatrix.scale(0.75f);
+        }
+        return viewMatrix;
+    }
+
+    public boolean isReadyToRender() {
+        return readyToRender;
     }
 }

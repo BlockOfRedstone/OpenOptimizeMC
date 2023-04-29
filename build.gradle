@@ -32,8 +32,8 @@ dependencies {
 	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
 
 	modImplementation("com.terraformersmc:modmenu:6.2.1")
-	implementation files("libs/DirtRenderer-alpha2.jar")
-	implementation files("libs/JavaNeoUtil-1.1.jar")
+	implementation(files("libs/DirtRenderer-alpha2.jar"))
+	implementation(files("libs/JavaNeoUtil-1.1.jar"))
 }
 
 base {
@@ -66,6 +66,15 @@ java {
 jar {
 	from("LICENSE") {
 		rename { "${it}_${base.archivesName.get()}"}
+	}
+	//from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+
+	from {
+		configurations.runtimeClasspath.collect {
+			if (it.name.containsIgnoreCase("dirtrenderer")) {
+				zipTree(it)
+			}
+		}
 	}
 }
 

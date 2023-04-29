@@ -1,7 +1,7 @@
 package com.fazziclay.openoptimizemc.config;
 
 import com.fazziclay.openoptimizemc.OpenOptimizeMc;
-import com.fazziclay.openoptimizemc.experemental.ExperimentalRenderer;
+import com.fazziclay.openoptimizemc.experemental.DirtRenderer;
 import com.fazziclay.openoptimizemc.util.Debug;
 import com.fazziclay.openoptimizemc.util.UpdateChecker;
 import net.minecraft.client.MinecraftClient;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 
 public class ConfigScreen extends Screen {
-    private static final boolean DEBUG_BUTTONS = OpenOptimizeMc.debug(true);
+    private static final boolean DEBUG_BUTTONS = OpenOptimizeMc.debug(false);
     private static final boolean DEBUG_TEXT = OpenOptimizeMc.debug(true);
     private final Screen parent;
     private final Config config;
@@ -39,32 +39,28 @@ public class ConfigScreen extends Screen {
 
     @Override
     protected void init() {
-        ButtonWidget cancel = ButtonWidget.builder(Text.translatable("openoptimizemc.close"), button -> this.close()).position(width - 60, height - 30).size(50, 20).build();
-        addSelectableChild(cancel);
-        addDrawable(cancel);
+        addButton(width - 60, height - 30, 50, 20, staticButton("openoptimizemc.close", null, this::close, null, () -> true));
 
-        addButton(10, 20, 65, 20, switchButton("feature.renderWorld.button", "feature.renderWorld.tooltip", config::isRenderLevel, config::toggleRenderLevel, null, () -> true));
-        addButton(80, 20, 80, 20, switchButton("feature.renderEntities.button", "feature.renderEntities.tooltip", config::isRenderEntities, config::toggleRenderEntities, this::updateButtons, () -> true));
-        addButton(165, 20, 95, 20, switchButton("feature.renderBlockEntities.button", "feature.renderBlockEntities.tooltip", config::isRenderBlockEntities, config::toggleRenderBlockEntities, null, () -> true));
-        addButton(265, 20, 95, 20, switchButton("feature.chunksUpdates.button", "feature.chunksUpdates.tooltip", config::isUpdateChunks, config::toggleUpdateChunks, null, () -> true));
+        addButton(10, 20, 65, 20, switchButton(true, "feature.renderWorld.button", "feature.renderWorld.tooltip", config::isRenderLevel, config::toggleRenderLevel, null, () -> isNotAutomatic()));
+        addButton(80, 20, 80, 20, switchButton(true, "feature.renderEntities.button", "feature.renderEntities.tooltip", config::isRenderEntities, config::toggleRenderEntities, this::updateButtons, () -> isNotAutomatic()));
+        addButton(165, 20, 95, 20, switchButton(true, "feature.renderBlockEntities.button", "feature.renderBlockEntities.tooltip", config::isRenderBlockEntities, config::toggleRenderBlockEntities, null, () -> isNotAutomatic()));
+        addButton(265, 20, 95, 20, switchButton(true, "feature.chunksUpdates.button", "feature.chunksUpdates.tooltip", config::isUpdateChunks, config::toggleUpdateChunks, null, () -> (OpenOptimizeMc.isInWorld() && isNotAutomatic())));
 
-        addButton(10, 70, 70, 20, switchButton("feature.renderPlayers.button", "feature.renderPlayers.tooltip", config::isRenderPlayers, config::toggleRenderPlayers, this::updateButtons, config::isRenderEntities));
-        addButton(85, 70, 105, 20, switchButton("feature.renderPlayersOnlyHeads.button", "feature.renderPlayersOnlyHeads.tooltip", config::isPlayersOnlyHeads, config::togglePlayersOnlyHeads, this::updateButtons, () -> (config.isRenderEntities() && config.isRenderPlayers())));
-        addButton(195, 70, 105, 20, switchButton("feature.notApplyFeaturesForSelfPlayer.button", "feature.notApplyFeaturesForSelfPlayer.tooltip", config::isNotApplyFeaturesForSelfPlayer, config::toggleNotApplyFeaturesForSelfPlayer, null, () -> true));
+        addButton(10, 70, 70, 20, switchButton(true, "feature.renderPlayers.button", "feature.renderPlayers.tooltip", config::isRenderPlayers, config::toggleRenderPlayers, this::updateButtons, () -> config.isRenderEntities() && isNotAutomatic()));
+        addButton(85, 70, 105, 20, switchButton(false, "feature.renderPlayersOnlyHeads.button", "feature.renderPlayersOnlyHeads.tooltip", config::isPlayersOnlyHeads, config::togglePlayersOnlyHeads, this::updateButtons, () -> (isNotAutomatic() && config.isRenderEntities() && config.isRenderPlayers())));
+        addButton(195, 70, 105, 20, switchButton(false, "feature.notApplyFeaturesForSelfPlayer.button", "feature.notApplyFeaturesForSelfPlayer.tooltip", config::isNotApplyFeaturesForSelfPlayer, config::toggleNotApplyFeaturesForSelfPlayer, null, () -> isNotAutomatic()));
         addButton(305, 70, 120, 20, getRendererButtonShape());
 
-        addButton(10, 95, 80, 20, switchButton("feature.renderArmor.button", "feature.renderArmor.tooltip", config::isRenderArmor, config::toggleRenderArmor, null, () -> (config.isRenderEntities() && config.getRenderer() == RendererType.VANILLA)));
-        addButton(95, 95, 75, 20, switchButton("feature.heldItem.button", "feature.heldItem.tooltip", config::isHeldItemFeature, config::toggleHeldItemFeature, null, () -> (config.isRenderEntities() && config.getRenderer() == RendererType.VANILLA)));
-        addButton(175, 95, 75, 20, switchButton("feature.entityAlwaysRender.button", "feature.entityAlwaysRender.tooltip", config::isEntityAlwaysShouldRender, config::toggleEntityAlwaysShouldRender, null, config::isRenderEntities));
-        addButton(260, 95, 80, 20, switchButton("feature.cacheItemStackEnchantments.button", "feature.cacheItemStackEnchantments.tooltip", config::isCacheItemStackEnchantments, config::toggleCacheItemStackEnchantments, null, () -> true));
+        addButton(10, 95, 80, 20, switchButton(true, "feature.renderArmor.button", "feature.renderArmor.tooltip", config::isRenderArmor, config::toggleRenderArmor, null, () -> (isNotAutomatic() && config.isRenderEntities() && config.getRenderer() == RendererType.VANILLA)));
+        addButton(95, 95, 75, 20, switchButton(true, "feature.heldItem.button", "feature.heldItem.tooltip", config::isHeldItemFeature, config::toggleHeldItemFeature, null, () -> (isNotAutomatic() && config.isRenderEntities() && config.getRenderer() == RendererType.VANILLA)));
+        addButton(175, 95, 75, 20, switchButton(false, "feature.entityAlwaysRender.button", "feature.entityAlwaysRender.tooltip", config::isEntityAlwaysShouldRender, config::toggleEntityAlwaysShouldRender, null, () -> isNotAutomatic() && config.isRenderEntities()));
+        addButton(260, 95, 80, 20, switchButton(false, "feature.cacheItemStackEnchantments.button", "feature.cacheItemStackEnchantments.tooltip", config::isCacheItemStackEnchantments, config::toggleCacheItemStackEnchantments, null, () -> isNotAutomatic()));
 
-        addButton(10, height - 30, 100, 20, switchButton("feature.advancedDebugProfiler.button", "feature.advancedDebugProfiler.tooltip", config::isAdvancedProfiler, config::toggleAdvancedProfiler, null, () -> true));
-        addButton(120, height - 30, 100, 20, switchButton("feature.openoptimizemc.automatic.button", "feature.openoptimizemc.automatic.tooltip", config::isAIBehavior, config::toggleAIBehavior, null, () -> true));
+        addButton(10, height - 30, 100, 20, switchButton(false, "feature.advancedDebugProfiler.button", "feature.advancedDebugProfiler.tooltip", config::isAdvancedProfiler, config::toggleAdvancedProfiler, null, () -> true));
+        addButton(115, height - 30, 110, 20, switchButton(true,"feature.openoptimizemc.automatic.button", "feature.openoptimizemc.automatic.tooltip", config::isAIBehavior, config::toggleAIBehavior, this::updateButtons, () -> true));
         if (DEBUG_BUTTONS) {
-            addButton(230, height - 30, 100, 20, staticButton("RELOAD SHADER", "RELAOD ExperimentalRenderer shader", ExperimentalRenderer.INSTANCE::init, null, () -> true));
-            addButton(335, height - 30, 100, 20, staticButton("RELOAD RES", "Like as F3+T", () -> {
-                MinecraftClient.getInstance().reloadResources();
-            }, null, () -> true));
+            addButton(230, height - 30, 100, 20, staticButton("_RELOAD_SHADER", "Call DirtRenderer init();\n\nNOT CLICK THIS!!! YOU ARE BREAK MINECRAFT RENDERING", DirtRenderer.INSTANCE::init, null, () -> true));
+            addButton(335, height - 30, 100, 20, staticButton("_RELOAD_RES", "Like as F3+T\n\nCall MinecraftClient.getInstance().reloadResources()", () -> MinecraftClient.getInstance().reloadResources(), null, () -> true));
         }
 
 
@@ -80,6 +76,10 @@ public class ConfigScreen extends Screen {
         update.visible = UpdateChecker.isUpdateAvailable();
         addSelectableChild(update);
         addDrawable(update);
+    }
+
+    private boolean isNotAutomatic() {
+        return !config.isAIBehavior();
     }
 
     private void addButton(int x, int y, int w, int h, ButtonShape buttonShape) {
@@ -134,7 +134,7 @@ public class ConfigScreen extends Screen {
         this.client.setScreen(parent);
     }
 
-    private Tooltip getButtonTooltip(String buttonTranslatable, boolean active, boolean vanilla, String tooltipTranslatable) {
+    private Tooltip getSwitchButtonTooltip(String buttonTranslatable, boolean active, boolean vanilla, String tooltipTranslatable) {
         Text tooltip = Text.translatable("openoptimizemc.config.tooltip.composed", Text.translatable(buttonTranslatable), Text.translatable(active ? "openoptimizemc.on.colored" : "openoptimizemc.off.colored"), Text.translatable(vanilla ? "openoptimizemc.on" : "openoptimizemc.off"), Text.translatable(tooltipTranslatable));
         return Tooltip.of(tooltip);
     }
@@ -165,7 +165,7 @@ public class ConfigScreen extends Screen {
         }
     }
 
-    private ButtonShape switchButton(String textTranslate, String tooltipTranslate, BooleanSupplier currentValue, Runnable toggle, Runnable post, BooleanSupplier active) {
+    private ButtonShape switchButton(boolean vanilla, String textTranslate, String tooltipTranslate, BooleanSupplier currentValue, Runnable toggle, Runnable post, BooleanSupplier active) {
         return new ButtonShape() {
             @Override
             public Text getText() {
@@ -179,7 +179,7 @@ public class ConfigScreen extends Screen {
 
             @Override
             public Tooltip getTooltip() {
-                return getButtonTooltip(textTranslate, currentValue.getAsBoolean(), true, tooltipTranslate);
+                return getSwitchButtonTooltip(textTranslate, currentValue.getAsBoolean(), vanilla, tooltipTranslate);
             }
 
             @Override
@@ -194,7 +194,7 @@ public class ConfigScreen extends Screen {
         };
     }
 
-    private ButtonShape staticButton(String textTranslate, String tooltipTranslate, Runnable toggle, Runnable post, BooleanSupplier active) {
+    private ButtonShape staticButton(String textTranslate, String tooltipTranslate, Runnable click, Runnable post, BooleanSupplier active) {
         return new ButtonShape() {
             @Override
             public Text getText() {
@@ -203,11 +203,12 @@ public class ConfigScreen extends Screen {
 
             @Override
             public void next() {
-                toggle.run();
+                click.run();
             }
 
             @Override
             public Tooltip getTooltip() {
+                if (tooltipTranslate == null) return null;
                 return Tooltip.of(Text.translatable(tooltipTranslate));
             }
 
@@ -243,7 +244,7 @@ public class ConfigScreen extends Screen {
 
             @Override
             public boolean isActive() {
-                return config.isRenderEntities() && config.isRenderPlayers() && !config.isPlayersOnlyHeads();
+                return isNotAutomatic() && config.isRenderEntities() && config.isRenderPlayers() && !config.isPlayersOnlyHeads();
             }
 
             @Override
